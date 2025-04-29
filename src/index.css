@@ -6,8 +6,6 @@
 @import '@fontsource/roboto/700.css';
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme{
   --font-sans: "Roboto", sans-serif;
 }

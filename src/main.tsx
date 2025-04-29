@@ -1,18 +1,18 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router';
+import { ThemeProvider } from './components/ui/theme-provider';
+import AppRouter from './AppRouter';
 import './index.css'
 
-import HomePage from './HomePage';
-import SurveyPage from './SurveyPage';
+//get user's color mode
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const scheme = prefersDark ? 'dark' : 'light';
+console.log(`User prefers ${scheme} mode`);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/survey/:id" element={<SurveyPage />} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <AppRouter/>
+    </ThemeProvider>
   </StrictMode>,
 )

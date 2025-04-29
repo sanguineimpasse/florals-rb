@@ -1,36 +1,59 @@
 {
   "id":"230724",
-  "type":"florals-rusher",
+  "version":"1.2",
   "title":"A Survey on Diet and Physical Activities",
+  "type":"florals-4scale",
   "desc":"Based on the definitions of physical activity and exercise, as you take this questionnaire, keep in mind that you can be physically active without exercising, but you cannot exercise without being physically active. Please be careful to not refresh the page as to not lose your progress. Thank you for your participation.",
   "color":"rgb(237, 255, 240)",
+  "details-field":{
+    "title":"Personal Information",
+    "fields":[
+      {
+        "title":"Name (optional)",
+        "type":"textbox",
+        "optional":true
+      },
+      {
+        "title":"Gender",
+        "type":"dropdown",
+        "optional":false,
+        "choices":[
+          "Male",
+          "Female",
+          "Prefer not to say"
+        ]
+      },
+      {
+        "title":"Year",
+        "type":"select",
+        "optional":false,
+        "choices":[
+          "1",
+          "2",
+          "3",
+          "4",
+          "N/A"
+        ]
+      },
+      {
+        "title":"Block (optional)",
+        "type":"number",
+        "optional":true,
+        "limit":10
+      }
+    ]
+  },
   "pages":[
     {
-      "title":"Welcome!",
-      "pagetype":"detail-input",
-      "questions":[]
-    },
-    {
       "title":"Section 1: Physical Activity",
-      "pagetype":"rating-questions",
       "questions":[
         "Do you identify daily time slots to be physically active?",
         "Do you seek additional opportunities to be active each day (walk, cycle, park farther away, do yard work/gardening)?",
-        "Do you avoid labor-saving devices/activities (escalators, elevators, self-propelled lawn mowers, snow blowers, drive-through windows)?",
-        "Does physical activity improve your health and well-being?",
+        "Do you think physical activity improves your health and well-being?",
         "Does physical activity increase your energy level?",
-        "Do you seek professional and/or medical (if necessary) advice prior to starting an exercise program or when increasing the intensity, duration, and frequency of exercise?",
         "Do you identify time slots to exercise most days of the week?",
         "Do you schedule exercise during times of the day when you feel most energetic?",
         "Do you have an alternative plan to be active or exercise during adverse weather conditions (walk at the mall, swim at the health club, climb stairs, skip rope, dance)?",
-        "Do you cross-train (participate in a variety of activities)?",
-        "Do you surround yourself with people who support your physical activity/exercise goals?",
-        "Do you let family and friends know of your physical activity/exercise interests?",
-        "Do you invite family and friends to exercise with you?",
-        "Do you seek new friendships with people who are physically active?",
-        "Do you select friendships with people whose fitness and skill levels are similar to yours?",
-        "Do you plan social activities that involve physical activity?",
-        "Do you plan activity/exercise when you are away from home (during business and vacation trips)?",
         "When you have a desire to do so, do you take classes to learn new activity/sport skills?",
         "Do you limit daily television viewing and Internet and computer game time?",
         "Do you spend leisure hours being physically active?"
@@ -38,10 +61,7 @@
     },
     {
       "title":"Section 2: Nutrition and Diet",
-      "pagetype":"rating-questions",
       "questions":[
-        "Do you prepare a shopping list prior to going to the store?",
-        "Do you select food items primarily from the perimeter of the store (site of most fresh/unprocessed foods)?",
         "Do you limit the unhealthy snacks you bring into the home and the workplace?",
         "Do you plan your meals and is your pantry well stocked so you can easily prepare a meal without a quick trip to the store?",
         "Do you help cook your meals?",
@@ -52,14 +72,7 @@
         "Do you include whole-grain products in your diet each day (whole-grain bread/cereal/crackers/rice/pasta)?",
         "Do you make a deliberate effort to include a variety of fruits and vegetables in your diet each day?",
         "Do you limit your daily saturated fat and trans fat intake (red meat, whole milk, cheese, butter, hard margarines, luncheon meats, baked goods, processed foods)?",
-        "Do you avoid unnecessary/unhealthy snacking (at work or play, during TV viewing, at the movies or socials)?",
-        "Do you plan caloric allowances prior to attending social gatherings that include food and eating?",
-        "Do you limit alcohol consumption to two drinks a day if you are a man or one drink a day if you are a woman?",
-        "Are you aware of strategies to decrease caloric intake when dining out (resist the server's offerings for drinks and appetizers, select a low-calorie/nutrient-dense item, drink water, resist cleaning your plate, ask for a doggie bag, share meals, request whole-wheat substitutes, get dressings on the side, avoid cream sauces, skip desserts)?",
-        "Do you avoid ordering larger meal sizes because you get more food for your money?",
-        "Do you avoid buying food when you hadn't planned to do so (gas stations, convenience stores, video rental stores)?",
-        "Do you fill your time with activities that will keep you away from places where you typically consume food (kitchen, coffee room, dining room)?",
-        "Do you know what situations trigger your desire for unnecessary snacking and overeating (vending machines, TV viewing, food ads, cookbooks, fast-food restaurants, buffet restaurants)?"
+        "Do you avoid unnecessary/unhealthy snacking (at work or play, during TV viewing, at the movies or socials)?"
       ]
     }
   ]
