@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import HomePage from './HomePage';
 import SurveyPage from './SurveyPage';
 
@@ -8,6 +8,9 @@ const AppRouter = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/survey/:id" element={<SurveyPage />} />
+
+        {/* let's just redirect to the home for now.... */}
+        <Route path="*" element={<Navigate to="/" replace />} /> 
       </Routes>
     </BrowserRouter>
   )

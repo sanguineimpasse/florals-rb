@@ -3,9 +3,9 @@
   "version":"1.2",
   "title":"A Survey on Diet and Physical Activities",
   "type":"florals-4scale",
-  "desc":"Based on the definitions of physical activity and exercise, as you take this questionnaire, keep in mind that you can be physically active without exercising, but you cannot exercise without being physically active. Please be careful to not refresh the page as to not lose your progress. Thank you for your participation.",
+  "desc":"Based on the definitions of physical activity and exercise as you take this questionnaire, keep in mind that you can be physically active without exercising, but you cannot exercise without being physically active. Please be careful to not refresh the page as to not lose your progress. Thank you for your participation.",
   "color":"rgb(237, 255, 240)",
-  "details-field":{
+  "details_field":{
     "title":"Personal Information",
     "fields":[
       {
@@ -15,7 +15,7 @@
       },
       {
         "title":"Gender",
-        "type":"dropdown",
+        "type":"radio",
         "optional":false,
         "choices":[
           "Male",
@@ -25,7 +25,7 @@
       },
       {
         "title":"Year",
-        "type":"select",
+        "type":"radio",
         "optional":false,
         "choices":[
           "1",
