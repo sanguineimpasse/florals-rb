@@ -4,7 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 type CardProps = {
   question: string;
-  onRadioChange: (value: string) => void;
+  onRadioChange?: (value: string) => void;
 }
 
 function FourScaleCard({

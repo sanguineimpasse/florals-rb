@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import HomePage from './HomePage';
-import SurveyPage from './SurveyPage';
+import HomePage from './pages/HomePage';
+import SurveyPage from './pages/SurveyPage';
 
 const AppRouter = () => {
   return(
