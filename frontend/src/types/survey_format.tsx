@@ -1,15 +1,21 @@
 type DetailField = {
+  id: string,
   title: string, 
   type: string, 
   optional: boolean, 
   choices?: string[],
   limit?: number
-}
+};
+
+type PageQuestions = {
+  id: string,
+  question: string
+};
 
 type Pages = {
   title: string, 
-  questions: string[]
-}
+  questions: Array<PageQuestions>
+};
 
 export type Survey = {
   id: string,

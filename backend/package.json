@@ -1,0 +1,11 @@
+{
+  "name": "florals-rb-backend",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start" : "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
