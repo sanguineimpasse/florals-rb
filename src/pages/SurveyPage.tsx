@@ -1,11 +1,11 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
-import { Button } from './components/ui/button';
-import FourScaleCard from './components/four-scale-card';
-import TypefluidCards from './components/typefluid-cards';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import FourScaleCard from '../components/four-scale-card';
+import TypefluidCards from '../components/typefluid-cards';
 
-import survey_imported from './data/nutrition_survey.json'
+import survey_imported from '../data/nutrition_survey.json'
 
 const SurveyPage = () => {
   const params = useParams();
@@ -20,7 +20,7 @@ const SurveyPage = () => {
     }
   }, [params]);
 
-  const [currentStep, setCurrentStep] = React.useState(0); // there are only two stages, personal info (0) and the question pages (1)
+  const [onPreForm, setOnPreForm] = React.useState(false); //pre form means before 'the' (actual) form lmaoo
 
   return(
     <div className="flex justify-center items-center h-full w-screen overflow-y-auto">
@@ -41,7 +41,7 @@ const SurveyPage = () => {
             </Card>
             
             {/* //! main fields && questions */}
-            { currentStep === 0 ? (
+            { onPreForm === false ? (
               <>
                 <Card className='w-full gap-3'>
                   <CardHeader>
@@ -67,9 +67,9 @@ const SurveyPage = () => {
 
               </>
             ) : (
-              <div>
-
-              </div>
+              <>
+              
+              </>
             )}
 
             {/* page buttons beyond this point */}

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Button } from "./components/ui/button";
+import { Button } from "../components/ui/button";
 
 const HomePage = () => {
   const flavorText = "Made w/ ❤️ by Group 3";
