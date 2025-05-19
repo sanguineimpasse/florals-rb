@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 const HomePage = () => {
   const flavorText = "Made w/ ❤️ by Group 3";
@@ -12,14 +12,14 @@ const HomePage = () => {
   return(
     <div className="flex justify-center h-screen w-screen">
       
-      <div className="flex flex-col items-center w-4xl pt-52">
+      <div className="flex flex-col items-center pt-52 w-96 md:w-4xl ">
         <h3>
           {flavorText}
         </h3>
-        <h1 className="text-6xl p-6 font-bold">
+        <h1 className="text-4xl md:text-6xl text-center p-4 md:p-6 font-bold">
           {pageTitle}
         </h1>
-        <p className="text-lg text-center w-2xl">
+        <p className="md:text-lg text-center md:w-2xl">
           {pageDesc}
         </p>        
         <Button className="m-6 dark:dark">
