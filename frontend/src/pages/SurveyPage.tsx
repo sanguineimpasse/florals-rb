@@ -6,11 +6,9 @@ import FourScaleCard from '@/components/four-scale-card';
 import TypefluidCards from '@/components/typefluid-cards';
 
 import { Survey } from '@/types/survey_format';
+import { DetailResponse } from '@/types/form_responses';
+import { FourScaleSurveyResponse } from '@/types/form_responses';
 import survey_imported from '@/data/nutrition_survey.json'
-
-interface MainPageProps {
-  survey: Survey
-}
 
 const NotFound = () => {
   return(
@@ -21,15 +19,18 @@ const NotFound = () => {
   )
 };
 
-const MainView = ({survey} : MainPageProps) => {
+interface MainPageProps {
+  survey: Survey
+}
 
-  //* detect if the user is refreshing while they are filling the fields
+const MainView = ({survey} : MainPageProps) => {
+  //* detect if the user will refresh the page when they are filling the fields
   const [isDirty, setIsDirty] = React.useState<boolean>(false);
   React.useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
-        // Standard message for most browsers, some ignore custom messages
-        const message = 'You have unsaved changes. Are you sure you want to leave?';
+        console.log("unload detected when the form is already dirty");
+        const message = 'You have unsaved changes. Are you sure you want to leave?'; //some browsers will ignore this custom message
         e.preventDefault();
         e.returnValue = message; // Gecko, Trident, Chrome 34+
         return message; // Gecko, WebKit, Chrome <34
@@ -44,11 +45,28 @@ const MainView = ({survey} : MainPageProps) => {
 
   }, [isDirty]);
  
-  const [onPreForm, setOnPreForm] = React.useState<boolean>(true); //pre form means before 'the' (actual) form lmaoo
+  const [onPreForm, setOnPreForm] = React.useState<boolean>(true); //pre form means before the (actual) survey thing lmaoo
   const [currentPage, setCurrentPage] = React.useState<number>(0);
 
-  const [preFormResponses, setPreFormResponses] = React.useState();
-  const [formResponses, setFormResponses] = React.useState();
+  const [preFormResponses, setPreFormResponses] = React.useState<DetailResponse>({});
+  const [surveyResponse, setSurveyResponse] = React.useState<FourScaleSurveyResponse>({});
+
+  const handlePreFormResponse = ( id: string, response: string) => {
+    setPreFormResponses(prev => ({...prev, [id]: response }));
+  };
+  const handlePreFormSubmission = () =>{
+    setIsDirty(true);
+    setOnPreForm(false);
+  };
+
+  const handleSurveyResponse = ( id: string, response: string) => {
+    setSurveyResponse(prev => ({...prev, [id]: response }));
+  };
+  const handleSurveySubmission = () => {
+    console.log("Submitting form");
+    console.log(preFormResponses);
+    console.log(surveyResponse);
+  };
 
   const handleNextPage = () => {
     setCurrentPage(prev => prev + 1);
@@ -56,7 +74,16 @@ const MainView = ({survey} : MainPageProps) => {
   const handlePrevPage = () => {
     setCurrentPage(prev => prev - 1);
   }
-
+  //* DEBUG
+  const handlePrintPreForm = () => {
+    console.log(preFormResponses);
+  };
+  const [showP, setShowP] = React.useState(false);
+  const handlePrintSurvey = () => {
+    //console.log("the value of p1q1 is" + surveyResponse[`p1q1`]);
+    setShowP(true);
+    console.log(surveyResponse);
+  };
   return (
     // thin responsive column
     <div className="flex flex-col items-center h-full w-md p-4 gap-5">
@@ -88,13 +115,17 @@ const MainView = ({survey} : MainPageProps) => {
               optional={field.optional}
               choices={field.choices}
               limit={field.limit}
+              onInputChange={(val)=> handlePreFormResponse(field.id, val)}
             />
           ))}
 
-          <Button className='w-full' onClick={()=>setOnPreForm(false)}>
-            {"Proceed"}
-          </Button>
-
+          <div className='w-full'>
+            <Button className='w-full' onClick={()=>handlePreFormSubmission()}>
+              {"Proceed"}
+            </Button>
+            <p className='text-xs text-center'>{"Note: You can't go back to this page later"}</p>
+          </div>
+          
         </>
       ) : 
       //* This is after the pre-form (the proceed button is pressed) 
@@ -108,27 +139,47 @@ const MainView = ({survey} : MainPageProps) => {
             </CardHeader>
           </Card>
 
-          {survey.pages[currentPage].questions.map((questions) => (
-            <FourScaleCard key={questions.id} question={questions.question}/>
+          {survey.pages[currentPage].questions.map((question) => (
+            <FourScaleCard 
+              key={question.id} 
+              question={question.question}
+              value={surveyResponse[question.id] || ""}
+              onRadioChange={(val) => handleSurveyResponse(question.id, val)}
+            />
           ))}
 
           <div className="flex flex-row w-full">
             {currentPage > 0 && (
-              <Button className='' onClick={()=>handlePrevPage()}>
+              <Button onClick={()=>handlePrevPage()}>
                 {"Previous Page"}
               </Button>
             )}
             <div className="w-full"></div>
             {currentPage < survey.pages.length - 1 && (
-              <Button className='' onClick={()=>handleNextPage()}>
+              <Button onClick={()=>handleNextPage()}>
                 {"Next Page"}
               </Button>
             )}
+            {currentPage === survey.pages.length - 1 && (
+              <Button onClick={()=>handleSurveySubmission()}>
+                {"Submit"}
+              </Button>
+            )}
           </div>
+
         </>
       )}
-
+      { //debug div weeeeeeeee
+        false && (
+          <div className="fixed top-1/2 left-0 ml-4 transform -translate-y-1/2 bg-accent shadow-lg p-4 rounded-lg z-50 w-xs">
+            <Button className="m-2" onClick={()=>handlePrintPreForm()}>{"Print PreForm responses here"}</Button>
+            <Button className="m-2" onClick={()=>handlePrintSurvey()}>{"Print Survey responses here"}</Button>
+            {(showP && <pre>{JSON.stringify(surveyResponse, null, 2)}</pre>)}
+          </div>
+        )
+      }
     </div>
+    
   )
 };
 

@@ -4,11 +4,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 type CardProps = {
   question: string;
+  value: string;
   onRadioChange?: (value: string) => void;
 }
 
 function FourScaleCard({
   question,
+  value,
   onRadioChange
 }: CardProps){
 
@@ -21,21 +23,21 @@ function FourScaleCard({
       </CardHeader>
       <CardContent>
         {/* 4 is highest, 1 is lowest */}
-        <RadioGroup onValueChange={onRadioChange}>
+        <RadioGroup value={value} onValueChange={onRadioChange}>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="4" id="option-one" />
+            <RadioGroupItem value="4" id="option-one"/>
             <Label htmlFor="option-one"> Always </Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="3" id="option-two" />
+            <RadioGroupItem value="3" id="option-two"/>
             <Label htmlFor="option-two"> Often</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="2" id="option-three" />
+            <RadioGroupItem value="2" id="option-three"/>
             <Label htmlFor="option-three"> Seldom </Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="1" id="option-four" />
+            <RadioGroupItem value="1" id="option-four"/>
             <Label htmlFor="option-four"> Never </Label>
           </div>
         </RadioGroup>
