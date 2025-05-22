@@ -1,12 +1,12 @@
 //THIS IS JUST TO TEST RADIO BUTTONS BEHAVIOR WHEN LOADING ANOTHER PAGE OF A SURVEY
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "../src/components/ui/button";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-import FourScaleCard from "@/components/four-scale-card";
+import FourScaleCard from "../src/components/four-scale-card";
 
 const survey_file = {
   "id":"230724",
@@ -88,10 +88,15 @@ const survey_file = {
   ]
 }
 
+interface ValuesType {
+  [id: string]: string;
+}
+
 const HideableTest = () => {
   
   const [survey, setSurvey] = useState(survey_file);
   const [currentPage, setCurrentPage] = useState(0);
+  const [values, setValues] = useState<ValuesType>({});
 
   const setPageCount = (type: string) => {
     if(type === "inc"){
@@ -108,13 +113,14 @@ const HideableTest = () => {
         {"This is the title of the form"}
       </h1>
       <form action="" className=" flex flex-col gap-5">
-        { survey.pages[currentPage].questions.map((question, index) => (
-          <FourScaleCard
-            key={index}
-            question={question}
-            
-          />
-        ))}
+        {/* {survey.pages[currentPage].questions.map((question) => (
+            <FourScaleCard 
+              key={question.id} 
+              question={question.question}
+              value={surveyResponse[question.id] || ""}
+              onRadioChange={(val) => handleSurveyResponse(question.id, val)}
+            />
+          ))} */}
       </form>
       <div className="flex p-4">
         { currentPage != 0 &&

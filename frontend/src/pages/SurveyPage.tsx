@@ -1,6 +1,13 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Card, 
+  //CardContent, 
+  CardDescription, 
+  //CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import FourScaleCard from '@/components/four-scale-card';
 import TypefluidCards from '@/components/typefluid-cards';
@@ -9,6 +16,21 @@ import { Survey } from '@/types/survey_format';
 import { DetailResponse } from '@/types/form_responses';
 import { FourScaleSurveyResponse } from '@/types/form_responses';
 import survey_imported from '@/data/nutrition_survey.json'
+
+const FormSubmittedView = () => {
+  return(
+    <div className="flex flex-col items-center h-full w-md p-4 gap-5">
+
+      <Card className='w-full'>
+        <CardHeader>
+          <CardTitle className="text-2xl">{"Response Submitted."}</CardTitle>
+          <CardDescription>{"Thank you for participating in the survey! ☺️"}</CardDescription>
+        </CardHeader>
+      </Card>
+
+    </div>
+  )
+};
 
 const NotFound = () => {
   return(
@@ -20,10 +42,11 @@ const NotFound = () => {
 };
 
 interface MainPageProps {
-  survey: Survey
+  survey: Survey;
+  setFormIsSubmitted: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const MainView = ({survey} : MainPageProps) => {
+const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   //* detect if the user will refresh the page when they are filling the fields
   const [isDirty, setIsDirty] = React.useState<boolean>(false);
   React.useEffect(() => {
@@ -66,6 +89,9 @@ const MainView = ({survey} : MainPageProps) => {
     console.log("Submitting form");
     console.log(preFormResponses);
     console.log(surveyResponse);
+
+    setIsDirty(false);
+    setFormIsSubmitted(true);
   };
 
   const handleNextPage = () => {
@@ -74,6 +100,7 @@ const MainView = ({survey} : MainPageProps) => {
   const handlePrevPage = () => {
     setCurrentPage(prev => prev - 1);
   }
+
   //* DEBUG
   const handlePrintPreForm = () => {
     console.log(preFormResponses);
@@ -112,7 +139,6 @@ const MainView = ({survey} : MainPageProps) => {
               key={field.id}
               title={field.title}
               type={field.type}
-              optional={field.optional}
               choices={field.choices}
               limit={field.limit}
               onInputChange={(val)=> handlePreFormResponse(field.id, val)}
@@ -186,6 +212,7 @@ const MainView = ({survey} : MainPageProps) => {
 const SurveyPage = () => {
   const params = useParams();
   const [survey, setSurvey] = React.useState<Survey | null>(null);
+  const [formIsSubmitted, setFormIsSubmitted] = React.useState(false);
 
   React.useEffect(() => {
     if (params.id === '230724') {
@@ -196,9 +223,13 @@ const SurveyPage = () => {
   return(
     <div className="flex justify-center items-center h-full w-screen overflow-y-auto">
       {survey !== null ? (
-        <MainView survey={survey} />
+        !formIsSubmitted ? (
+          <MainView survey={survey} setFormIsSubmitted={setFormIsSubmitted} />
+        ) : (
+          <FormSubmittedView />
+        )
       ) : (
-        <NotFound/>
+        <NotFound />
       )}
     </div>
   )

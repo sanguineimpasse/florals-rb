@@ -1,12 +1,11 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Card, CardContent, CardHeader, CardFooter, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from "./ui/input";
 
 type CardProps = {
   title: string;
   type: string;
-  optional: boolean;
   choices?: string[];
   limit?: number;
   onInputChange?: (value: string) => void;
@@ -17,7 +16,6 @@ type CardProps = {
 function TypefluidCards({
   title,
   type,
-  optional,
   choices,
   limit,
   onInputChange
