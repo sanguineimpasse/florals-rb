@@ -1,23 +1,29 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Input } from "./ui/input";
 
 type CardProps = {
+  id: string,
   title: string;
   type: string;
+  optional: boolean;
   choices?: string[];
   limit?: number;
+  notValidReason?: string,
   onInputChange?: (value: string) => void;
 }
 
 //card types: textbox, number textbox, radio
 
 function TypefluidCards({
+  id,
   title,
   type,
+  optional,
   choices,
   limit,
+  notValidReason,
   onInputChange
 }: CardProps){
 
@@ -31,10 +37,10 @@ function TypefluidCards({
   };
 
   return(
-      <Card className='w-full gap-3'>
+      <Card className="w-full gap-3">
         <CardHeader>
           <CardTitle>
-            {title}
+            {title}{!optional && ' *'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -47,17 +53,21 @@ function TypefluidCards({
           { (type === "radio" && choices) &&
             <RadioGroup onValueChange={onInputChange}>
               {choices.map((choice, index) => {
-                const id = `choice-${index}`;
                 return (
-                  <div key={id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={choice} id={id}/>
-                    <Label htmlFor={id}>{choice}</Label>
+                  <div key={`${id}-choice-${index}`} className="flex items-center space-x-2">
+                    <RadioGroupItem value={choice} id={`${id}-choice-${index}`}/>
+                    <Label htmlFor={`${id}-choice-${index}`}>{choice}</Label>
                   </div>
                 );
               })}
             </RadioGroup>
           }
         </CardContent>
+        {notValidReason && 
+          <CardFooter>
+            <p className="text-destructive text-sm">{notValidReason}</p>
+          </CardFooter>
+        }
       </Card>
   )
 }

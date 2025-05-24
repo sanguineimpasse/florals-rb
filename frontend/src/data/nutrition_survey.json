@@ -1,21 +1,21 @@
 {
   "id":"230724",
-  "version":"1.3",
+  "version":"1.5",
   "title":"A Survey on Diet and Physical Activities",
   "type":"florals-4scale",
-  "desc":"Based on the definitions of physical activity and exercise as you take this questionnaire, keep in mind that you can be physically active without exercising, but you cannot exercise without being physically active. Thank you for your participation.",
+  "desc":"Based on the definitions of physical activity and exercise as you take this questionnaire, keep in mind that you can be physically active without exercising, but you cannot exercise without being physically active.",
   "color":"rgb(237, 255, 240)",
   "details_field":{
     "title":"Personal Information",
     "fields":[
       {
-        "id":"1",
+        "id":"q1",
         "title":"Name (optional)",
         "type":"textbox",
         "optional":true
       },
       {
-        "id":"2",
+        "id":"q2",
         "title":"Gender",
         "type":"radio",
         "optional":false,
@@ -26,7 +26,7 @@
         ]
       },
       {
-        "id":"3",
+        "id":"q3",
         "title":"Year",
         "type":"radio",
         "optional":false,
@@ -35,11 +35,11 @@
           "2",
           "3",
           "4",
-          "N/A"
+          "Not in College/Not a student"
         ]
       },
       {
-        "id":"4",
+        "id":"q4",
         "title":"Block (optional)",
         "type":"number",
         "optional":true,
@@ -75,8 +75,7 @@
         { "id": "p2_q7", "question": "Do you eat your meals at the table only?" },
         { "id": "p2_q8", "question": "Do you include whole-grain products in your diet each day (whole-grain bread/cereal/crackers/rice/pasta)?" },
         { "id": "p2_q9", "question": "Do you make a deliberate effort to include a variety of fruits and vegetables in your diet each day?" },
-        { "id": "p2_q10", "question": "Do you limit your daily saturated fat and trans fat intake (red meat, whole milk, cheese, butter, hard margarines, luncheon meats, baked goods, processed foods)?" },
-        { "id": "p2_q11", "question": "Do you avoid unnecessary/unhealthy snacking (at work or play, during TV viewing, at the movies or socials)?" }
+        { "id": "p2_q10", "question": "Do you avoid unnecessary/unhealthy snacking (at work or play, during TV viewing, at the movies or socials)?" }
       ]
     }
   ]
