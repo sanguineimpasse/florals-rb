@@ -1,21 +1,29 @@
+const dotenv = require('dotenv').config({ path: '../../.env.local' });
 const express = require('express');
 const router = express.Router();
 
+const SurveyResponse = require('../models/SurveyResponse');
+
 router.post('/survey/submit', async (req, res) => {
-    console.log('doing post operation');
-    const { surveyID, details, responses } = req.body;
-    
-    console.log( '\nsurvey query from: ' + details.name + ' of year ' + details.year + '\n');
-    console.log( 'their responses: ' + responses + '\n');
-    const response = { message : 'valid inputs 👍'} //emoji on code???? AHHHHHHH HELLL NAWWWW 😭💀
-    res.status(201).json({ response })
-    // try {
-    //     const movie = await Movie.create({ title, director, year_released: yearReleased, rating, genre });
-    //     res.status(201).json(movie);
-    // } catch (error) {
-    //     console.error('Error creating movie:', error);
-    //     res.status(500).json({ error: 'Failed to create movie' });
-    // }
+    console.log('[/survey/submit]: doing post operation');
+
+    //const { surveyID, details_field, survey_responses } = req.body;
+    // console.log(`\nsubmission for surveyID ${surveyID} \nsubmitter: ${details_field.q1} of year ${details_field.q3}`)
+    // console.log( 'their responses: ' + JSON.stringify(survey_responses) + '\n');
+    // const response = { message : 'valid inputs 👍' } //emoji on code???? AHHHHHHH HELLL NAWWWW 😭💀
+    // res.status(202).json({ response })
+
+    try {
+      const survey = new SurveyResponse(req.body);
+      await survey.validate();
+      await survey.save();
+      //await SurveyResponse.create({ surveyID: surveyID, details_field: details_field, survey_responses: survey_responses });
+      const response = { message: "Success"};
+      res.status(201).json({ response });
+    } catch (error) {
+      console.error('Error submitting response:', error);
+      res.status(500).json({ error: 'Internal Server Error: Failed to submit response' });
+    }
 });
 
 router.get('/test', (req, res) => {
@@ -30,11 +38,6 @@ router.get('/test', (req, res) => {
 router.get('/brew', (req, res) => {
   const date = new Date();
   res.status(418).json({message:"I'm a teapot. I cannot brew coffee.", timestamp: date});
-});
-
-// Handle requests by serving index.html for all routes
-router.get(/(.*)/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
 
 module.exports = router;

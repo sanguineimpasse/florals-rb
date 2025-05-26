@@ -15,6 +15,7 @@ import TypefluidCards from '@/components/typefluid-cards';
 import { Survey } from '@/types/survey_format';
 import { DetailResponse } from '@/types/form_responses';
 import { FourScaleSurveyResponse } from '@/types/form_responses';
+import { ResponseFormat } from '@/types/response_format';
 import survey_imported from '@/data/nutrition_survey.json'
 
 const FormSubmittedView = () => {
@@ -47,6 +48,8 @@ interface MainPageProps {
 }
 
 const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
+  const topPageRef = React.useRef<HTMLDivElement>(null);
+
   //* detect if the user will refresh the page when they are filling the fields
   const [isDirty, setIsDirty] = React.useState<boolean>(false);
   React.useEffect(() => {
@@ -69,11 +72,12 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   }, [isDirty]);
 
   const [onPreForm, setOnPreForm] = React.useState<boolean>(true); //pre form means before the (actual) survey thing lmaoo
+  //const [submissionError, setSubmissionError] = React.useState<boolean>(false);
 
   const [currentPage, setCurrentPage] = React.useState<number>(0);
 
   const [preFormResponses, setPreFormResponses] = React.useState<DetailResponse>({});
-  const [surveyResponse, setSurveyResponse] = React.useState<FourScaleSurveyResponse>({});
+  const [surveyResponses, setSurveyResponses] = React.useState<FourScaleSurveyResponse>({});
 
   const [preFormErrors, setPreFormErrors] = React.useState<DetailResponse>({});
   const [surveyResponseErrors, setSurveyResponseErrors] = React.useState<FourScaleSurveyResponse>({});
@@ -104,9 +108,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
         valid = false;
       } else {
         //remove the error if its already fixed
-        if(preFormErrors[`q${x + 1}`] && preFormErrors[`q${x + 1}`] != ''){
-          handlePreFormErrors(`q${x + 1}`, '');
-        }
+        handlePreFormErrors(`q${x + 1}`, '');
       }
     }
 
@@ -121,39 +123,74 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   };
 
   const handleSurveyResponse = ( id: string, response: string) => {
-    setSurveyResponse(prev => ({...prev, [id]: response }));
+    setSurveyResponses(prev => ({...prev, [id]: response }));
   };
   const handleSurveyResponseErrors = (id: string, response: string) => {
     setSurveyResponseErrors(prev => ({...prev, [id]: response }));
   };
   const handleSurveySubmission = () => {
-    console.log("Submitting form");
-    console.log(preFormResponses);
-    console.log(surveyResponse);
-
     //* validation here
     // just check if there are answers for all the questions
     let valid = true; 
     for(let x = 0; x < survey.pages.length; x++){
       for(let y = 0; y < survey.pages[x].questions.length; y++){
-        if(!surveyResponse[`p${x + 1}_q${y + 1}`]){
+        if(!surveyResponses[`p${x + 1}_q${y + 1}`]){
           setCurrentPage(x);
           handleSurveyResponseErrors(`p${x + 1}_q${y + 1}`, `This field is required.`);
           valid = false;
         } else {
           // remove the error if its already fixed
-          if(surveyResponseErrors[`p${x + 1}_q${y + 1}`] && surveyResponseErrors[`p${x + 1}_q${y + 1}`] != ''){
-            handleSurveyResponseErrors(`p${x + 1}_q${y + 1}`, '');
-          }
+          handleSurveyResponseErrors(`p${x + 1}_q${y + 1}`, '');
         }
       }
     }
 
     if(valid){
       setIsDirty(false);
-      setFormIsSubmitted(true);
+      handleSubmission();
     }
   };
+
+  //* this kickstarts the api submission >:) (chaos and things will happen)
+  const handleSubmission = () => {
+    // console.log("Submitting form");
+    // console.log(preFormResponses);
+    // console.log(surveyResponses);
+    sendToServer({
+      surveyID: survey.id,
+      details_field: preFormResponses,
+      survey_responses: surveyResponses
+    });
+  };
+
+  async function sendToServer(data: ResponseFormat): Promise<any> {
+    let apiAddress = `https://florals-rb.vercel.app/api/survey/submit`;
+    if(import.meta.env.DEV){
+      apiAddress = 'http://localhost:4000/api/survey/submit';
+    }
+    //console.log(`Sending DATA to ${apiAddress}`);
+    try {
+      const response = await fetch(apiAddress, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setFormIsSubmitted(true);
+      return result;
+    } 
+    catch (error) {
+      console.error('Error sending data to API:', error);
+      throw error;
+    }
+  }
 
   const handleNextPage = () => {
     setCurrentPage(prev => prev + 1);
@@ -162,15 +199,19 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     setCurrentPage(prev => prev - 1);
   }
 
+  React.useEffect(() => {
+    topPageRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentPage]);
+
   //* DEBUG
   const handlePrintPreForm = () => {
     console.log(preFormResponses);
   };
   const [showP, setShowP] = React.useState(false);
   const handlePrintSurvey = () => {
-    //console.log("the value of p1q1 is" + surveyResponse[`p1q1`]);
+    //console.log("the value of p1q1 is" + surveyResponses[`p1q1`]);
     setShowP(true);
-    console.log(surveyResponse);
+    console.log(surveyResponses);
   };
   const functionsTestPrint = () => {
     let totalQuestions = 0;
@@ -186,7 +227,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     // thin responsive column
     <div className="flex flex-col items-center h-full w-md p-4 gap-5">
 
-      <Card className='w-full'>
+      <Card ref={topPageRef} className='w-full'>
         <CardHeader>
           <CardTitle className="text-2xl">{survey.title}</CardTitle>
           <CardDescription>{survey.desc}</CardDescription>
@@ -234,7 +275,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
           
         </>
       ) : 
-      //* This is after the pre-form (the proceed button is pressed) 
+      //* This is after the pre-form (the proceed button is clicked) 
       (
         <>
           <Card className='w-full gap-3'>
@@ -250,7 +291,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
               key={question.id} 
               id={question.id}
               question={question.question}
-              value={surveyResponse[question.id] || ""}
+              value={surveyResponses[question.id] || ""}
               notValidReason={surveyResponseErrors[question.id]}
               onRadioChange={(val) => handleSurveyResponse(question.id, val)}
             />
@@ -290,7 +331,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
             <Button className="m-2" onClick={handlePrintPreForm}>{"Print PreForm responses here"}</Button>
             <Button className="m-2" onClick={handlePrintSurvey}>{"Print Survey responses here"}</Button>
             <Button className="m-2" onClick={functionsTestPrint}>{"Print Test Functions"}</Button>
-            {(showP && <pre>{JSON.stringify(surveyResponse, null, 2)}</pre>)}
+            {(showP && <pre>{JSON.stringify(surveyResponses, null, 2)}</pre>)}
           </div>
         )
       }
