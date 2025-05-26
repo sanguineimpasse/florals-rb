@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const SurveyResponse = require('../models/SurveyResponse');
+const connectToDatabase = require('../lib/mongo');
 
 router.post('/survey/submit', async (req, res) => {
     console.log('[/survey/submit]: doing post operation');
@@ -11,7 +12,7 @@ router.post('/survey/submit', async (req, res) => {
     // console.log( 'their responses: ' + JSON.stringify(survey_responses) + '\n');
     // const response = { message : 'valid inputs 👍' } //emoji on code???? AHHHHHHH HELLL NAWWWW 😭💀
     // res.status(202).json({ response })
-
+    await connectToDatabase(); 
     try {
       const survey = new SurveyResponse(req.body);
       await survey.validate();
