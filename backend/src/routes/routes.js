@@ -25,6 +25,14 @@ router.post('/survey/submit', async (req, res) => {
     }
 });
 
+router.post('/test/survey/submit', (req, res) => {
+  const { surveyID, details_field, survey_responses } = req.body;
+  console.log(`\nsubmission for surveyID ${surveyID} \nsubmitter: ${details_field.q1} of year ${details_field.q3}`)
+  console.log( 'their responses: ' + JSON.stringify(survey_responses) + '\n');
+  const response = { message : 'valid inputs 👍' } //emoji on code???? AHHHHHHH HELLL NAWWWW 😭💀
+  res.status(202).json({ response })
+});
+
 router.get('/test', (req, res) => {
   const data = {
     message: 'Hello, world!',

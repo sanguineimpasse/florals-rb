@@ -17,6 +17,7 @@ import { DetailResponse } from '@/types/form_responses';
 import { FourScaleSurveyResponse } from '@/types/form_responses';
 import { ResponseFormat } from '@/types/response_format';
 import survey_imported from '@/data/nutrition_survey.json'
+import { Spinner } from '@/components/ui/spinner';
 
 const FormSubmittedView = () => {
   return(
@@ -30,6 +31,22 @@ const FormSubmittedView = () => {
       </Card>
 
     </div>
+  )
+};
+
+const WhileSubmittingView = () => {
+  return(
+    <>
+      <Card className='w-full'>
+        <CardHeader>
+          <CardTitle className="text-2xl">{"Submitting your response..."}</CardTitle>
+          <CardDescription>{"Please do not leave this page until after the submission is complete."}</CardDescription>
+        </CardHeader>
+        
+      </Card>
+
+      <Spinner className="w-10 h-10"/>
+    </>
   )
 };
 
@@ -117,8 +134,6 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
         setIsDirty(true);
       }
       setOnPreForm(false);
-    } else {
-
     }
   };
 
@@ -132,6 +147,8 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     //* validation here
     // just check if there are answers for all the questions
     let valid = true; 
+
+    //for every page // for every question
     for(let x = 0; x < survey.pages.length; x++){
       for(let y = 0; y < survey.pages[x].questions.length; y++){
         if(!surveyResponses[`p${x + 1}_q${y + 1}`]){
@@ -151,6 +168,8 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     }
   };
 
+  const [beingSubmitted, setBeingSubmitted] = React.useState<boolean>(false);
+
   //* this kickstarts the api submission >:) (chaos and things will happen)
   const handleSubmission = () => {
     // console.log("Submitting form");
@@ -165,10 +184,10 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
 
   async function sendToServer(data: ResponseFormat): Promise<any> {
     let apiAddress = `/api/survey/submit`;
-    // if(import.meta.env.DEV){
-    //   apiAddress = 'http://localhost:4000/api/survey/submit';
-    // }
-    //console.log(`Sending DATA to ${apiAddress}`);
+    if(import.meta.env.DEV){
+      apiAddress = 'http://localhost:4000/api/test/survey/submit';
+    }
+    setBeingSubmitted(true);
     try {
       const response = await fetch(apiAddress, {
         method: 'POST',
@@ -219,112 +238,126 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
       totalQuestions += survey.pages[x].questions.length;
       console.log(`survey.pages[${x}] | totalQuestions = ${totalQuestions}`);
     }
-
     console.log(totalQuestions);
   };
 
   return (
     // thin responsive column
     <div className="flex flex-col items-center h-full w-md p-4 gap-5">
-
-      <Card ref={topPageRef} className='w-full'>
-        <CardHeader>
-          <CardTitle className="text-2xl">{survey.title}</CardTitle>
-          <CardDescription>{survey.desc}</CardDescription>
-        </CardHeader>
-      </Card>
-      
-      {/* //! main fields && questions */}
-      { onPreForm === true ? (
+      {beingSubmitted ? (
+        <WhileSubmittingView />
+      ) : (
         <>
-
-          <Card className='w-full gap-3'>
+          <Card ref={topPageRef} className="w-full">
             <CardHeader>
-              <CardTitle className='leading-5'>
-                {survey.details_field.title}
-              </CardTitle>
+              <CardTitle className="text-2xl">{survey.title}</CardTitle>
+              <CardDescription>{survey.desc}</CardDescription>
             </CardHeader>
           </Card>
 
-          {survey.details_field.fields.map((field) => (
-            <TypefluidCards
-              key={field.id}
-              id={field.id}
-              title={field.title}
-              type={field.type}
-              optional={field.optional}
-              choices={field.choices}
-              limit={field.limit}
-              notValidReason={preFormErrors[field.id]}
-              onInputChange={(val)=> handlePreFormResponse(field.id, val)}
-            />
-          ))}
+          {/* //* pre form stuffs */}
+          {onPreForm ? (
+            <>
+              <Card className="w-full gap-3">
+                <CardHeader>
+                  <CardTitle className="leading-5">
+                    {survey.details_field.title}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
 
-          <div className='w-full'>
-            <Button 
-              className={`w-full ${Object.keys(preFormErrors).length != 0 && 'bg-red-700 dark:bg-red-400  hover:bg-red-300 dark:hover:bg-red-200'}`} 
-              onClick={handlePreFormSubmission}
-            >
-              {"Proceed"}
-            </Button>
-            { Object.keys(preFormErrors).length != 0 &&
-              <p className="text-destructive text-sm text-center mt-2 font-bold">{"You have invalid inputs"}</p>
-            }
-            <p className="text-xs text-center mt-2">{"Note: You can't go back to this page later"}</p>
-          </div>
-          
-        </>
-      ) : 
-      //* This is after the pre-form (the proceed button is clicked) 
-      (
-        <>
-          <Card className='w-full gap-3'>
-            <CardHeader>
-              <CardTitle className='leading-5'>
-                {survey.pages[currentPage].title}
-              </CardTitle>
-            </CardHeader>
-          </Card>
+              {survey.details_field.fields.map((field) => (
+                <TypefluidCards
+                  key={field.id}
+                  id={field.id}
+                  title={field.title}
+                  type={field.type}
+                  optional={field.optional}
+                  choices={field.choices}
+                  limit={field.limit}
+                  notValidReason={preFormErrors[field.id]}
+                  onInputChange={(val) => handlePreFormResponse(field.id, val)}
+                />
+              ))}
 
-          {survey.pages[currentPage].questions.map((question) => (
-            <FourScaleCard 
-              key={question.id} 
-              id={question.id}
-              question={question.question}
-              value={surveyResponses[question.id] || ""}
-              notValidReason={surveyResponseErrors[question.id]}
-              onRadioChange={(val) => handleSurveyResponse(question.id, val)}
-            />
-          ))}
+              <div className="w-full">
+                <Button
+                  className={`w-full ${
+                    Object.keys(preFormErrors).length !== 0
+                      ? "bg-red-700 dark:bg-red-400 hover:bg-red-300 dark:hover:bg-red-200"
+                      : ""
+                  }`}
+                  onClick={handlePreFormSubmission}
+                >
+                  Proceed
+                </Button>
 
-          <div className="flex flex-row w-full">
-            {currentPage > 0 && (
-              <Button onClick={handlePrevPage}>
-                {"Previous Page"}
-              </Button>
-            )}
-            <div className="w-full"></div>
-            {currentPage < survey.pages.length - 1 && (
-              <Button onClick={handleNextPage}>
-                {"Next Page"}
-              </Button>
-            )}
-            {currentPage === survey.pages.length - 1 && (
-              <Button 
-                className={`${Object.keys(surveyResponseErrors).length != 0 && 'bg-red-700 dark:bg-red-400  hover:bg-red-300 dark:hover:bg-red-200'}`}
-                onClick={handleSurveySubmission}
-              >
-                {"Submit"}
-              </Button>
-            )}
-          </div>
-          { Object.keys(surveyResponseErrors).length != 0 &&
-            <p className="text-destructive text-sm text-right font-bold w-full">{"You have invalid inputs"}</p>
-          }
-          
+                {Object.keys(preFormErrors).length !== 0 && (
+                  <p className="text-destructive text-sm text-center mt-2 font-bold">
+                    You have invalid inputs
+                  </p>
+                )}
 
+                <p className="text-xs text-center mt-2">
+                  Note: You can't go back to this page later
+                </p>
+              </div>
+            </>
+          ) : ( 
+            <>
+              {/* //! main survey thing */}
+              <Card className="w-full gap-3">
+                <CardHeader>
+                  <CardTitle className="leading-5">
+                    {survey.pages[currentPage].title}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+
+              {survey.pages[currentPage].questions.map((question) => (
+                <FourScaleCard
+                  key={question.id}
+                  id={question.id}
+                  question={question.question}
+                  value={surveyResponses[question.id] || ""}
+                  notValidReason={surveyResponseErrors[question.id]}
+                  onRadioChange={(val) => handleSurveyResponse(question.id, val)}
+                />
+              ))}
+
+              {Object.keys(surveyResponseErrors).length !== 0 && (
+                <p className="text-destructive text-sm text-right font-bold w-full">
+                  You have invalid inputs
+                </p>
+              )}
+
+              <div className="flex flex-row w-full items-center justify-between">
+                {currentPage > 0 && (
+                  <Button onClick={handlePrevPage}>Previous Page</Button>
+                )}
+                <div className="flex-1" />
+                {currentPage < survey.pages.length - 1 ? (
+                  <Button onClick={handleNextPage}>Next Page</Button>
+                ) : (
+                  <Button
+                    className={`${
+                      Object.keys(surveyResponseErrors).length !== 0
+                        ? "bg-red-700 dark:bg-red-400 hover:bg-red-300 dark:hover:bg-red-200"
+                        : ""
+                    }`}
+                    onClick={handleSurveySubmission}
+                  >
+                    Submit
+                  </Button>
+                )}
+              </div>
+
+              
+            </>
+          )}
         </>
       )}
+
       { //debug div weeeeeeeee
         false && (
           <div className="fixed top-1/2 left-0 ml-4 transform -translate-y-1/2 bg-accent shadow-lg p-4 rounded-lg z-50 w-xs">
@@ -335,6 +368,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
           </div>
         )
       }
+
     </div>
     
   )
