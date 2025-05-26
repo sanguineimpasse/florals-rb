@@ -164,10 +164,10 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   };
 
   async function sendToServer(data: ResponseFormat): Promise<any> {
-    let apiAddress = `https://florals-rb.vercel.app/api/survey/submit`;
-    if(import.meta.env.DEV){
-      apiAddress = 'http://localhost:4000/api/survey/submit';
-    }
+    let apiAddress = `/api/survey/submit`;
+    // if(import.meta.env.DEV){
+    //   apiAddress = 'http://localhost:4000/api/survey/submit';
+    // }
     //console.log(`Sending DATA to ${apiAddress}`);
     try {
       const response = await fetch(apiAddress, {

@@ -1,20 +1,18 @@
-console.log(require('fs').readFileSync('.env', 'utf8'));
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv').config();
+
+if(process.env.NODE_ENV !== 'production'){
+  const dotenv = require('dotenv').config({ path: path.join(__dirname, '../.env') });
+}
 
 const app = express();
 const routes = require('./routes/routes');
-const port = process.env.PORT || 4000;
 
 app.use(cors());
-//restrict the origin when on prod
-// app.use(cors({
-//   origin: 'https://florals-rb.vercel.app/',
-//   credentials: true
-// }));
+// app.use(cors({ origin: '*' }));
+//* note: should probably restrict origins when deploying to prod
 
 app.use(express.json());
 
@@ -38,6 +36,11 @@ app.get(/(.*)/, (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// if (require.main === module) {
+//   const PORT = process.env.PORT || 3000;
+//   app.listen(PORT, () => {
+//     console.log(`Server running on http://localhost:${PORT}`);
+//   });
+// }
+
+module.exports = app;
