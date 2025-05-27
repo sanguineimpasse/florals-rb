@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const path = require('path');
 if(process.env.NODE_ENV !== 'production'){
-  const dotenv = require('dotenv').config({ path: path.join(__dirname, '../.env') });
+  const dotenv = require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 }
 
 let isConnected = false;

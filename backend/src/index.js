@@ -10,20 +10,13 @@ if(process.env.NODE_ENV !== 'production'){
 const app = express();
 const routes = require('./routes/routes');
 
-app.use(cors());
+if(process.env.NODE_ENV !== 'production'){
+  app.use(cors());
+}
 // app.use(cors({ origin: '*' }));
 //* note: should probably restrict origins when deploying to prod
 
 app.use(express.json());
-
-// // MongoDB connection
-// mongoose.connect(process.env.MONGODB_URI, {});
-
-// const db = mongoose.connection;
-// db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-// db.once('open', () => {
-//     console.log('Connected to MongoDB');
-// });
 
 app.use('/api', routes);
 

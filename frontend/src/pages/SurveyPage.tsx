@@ -1,8 +1,9 @@
 import React from 'react';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { useParams } from 'react-router';
 import { 
   Card, 
-  //CardContent, 
+  CardContent, 
   CardDescription, 
   //CardFooter, 
   CardHeader, 
@@ -34,18 +35,64 @@ const FormSubmittedView = () => {
   )
 };
 
-const WhileSubmittingView = () => {
+interface WhileSubmittingProps  {
+  submissionFailed: boolean,
+  submissionError: any
+};
+
+const WhileSubmittingView = ({submissionFailed, submissionError}: WhileSubmittingProps) => {
+  const [timeout, setTimeout] = React.useState(8);
+  const [showWarning, setShowWarning] = React.useState(false);
+
+  React.useEffect(() => {
+    if (timeout <= 0) {
+      setShowWarning(true);
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setTimeout((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [timeout]);
+
   return(
     <>
-      <Card className='w-full'>
+      <Card className={`w-full`}>
         <CardHeader>
-          <CardTitle className="text-2xl">{"Submitting your response..."}</CardTitle>
-          <CardDescription>{"Please do not leave this page until after the submission is complete."}</CardDescription>
+          {!submissionFailed ? (
+            <>
+              <CardTitle className="text-2xl">{"Submitting your response..."}</CardTitle>
+              <CardDescription>{"Please do not leave this page until after the submission is complete."}</CardDescription>
+            </>
+          ):(
+            <>
+              <CardTitle className="text-2xl text-destructive">{"Submission Error"}</CardTitle>
+              <CardDescription className='text-destructive'>
+                {"Please reload this page and try again. If the error persists, contact the administrator of this website."}
+              </CardDescription>
+            </>
+          )}
         </CardHeader>
-        
+        {submissionFailed && 
+          <CardContent>
+            <p className='text-xs text-destructive'>{`Error: ${submissionError.message}`}</p>
+          </CardContent>
+        }
       </Card>
 
-      <Spinner className="w-10 h-10"/>
+      
+
+      {!submissionFailed &&
+        <>
+          <Spinner className="w-10 h-10"/>
+          {showWarning && (
+            <p className="text-md">{"This is taking longer than usual... There's probably an error 💀"}</p>
+          )}
+        </>
+      }
+      
     </>
   )
 };
@@ -88,8 +135,10 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
 
   }, [isDirty]);
 
+  const [submissionError, setSubmissionError] = React.useState<any>();
+  const [submissionFailed, setSubmissionFailed] = React.useState<boolean>(false);
+
   const [onPreForm, setOnPreForm] = React.useState<boolean>(true); //pre form means before the (actual) survey thing lmaoo
-  //const [submissionError, setSubmissionError] = React.useState<boolean>(false);
 
   const [currentPage, setCurrentPage] = React.useState<number>(0);
 
@@ -183,33 +232,37 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   };
 
   async function sendToServer(data: ResponseFormat): Promise<any> {
-    let apiAddress = `/api/survey/submit`;
-    if(import.meta.env.DEV){
-      apiAddress = 'http://localhost:4000/api/test/survey/submit';
-    }
-    setBeingSubmitted(true);
-    try {
-      const response = await fetch(apiAddress, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      setFormIsSubmitted(true);
-      return result;
-    } 
-    catch (error) {
-      console.error('Error sending data to API:', error);
-      throw error;
-    }
+  let apiAddress = `/api/survey/submit`;
+  if (import.meta.env.DEV) {
+    apiAddress = 'http://localhost:4000/api/test/survey/submit';
   }
+
+  setBeingSubmitted(true);
+
+  try {
+    const response: AxiosResponse<any> = await axios.post(apiAddress, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    setFormIsSubmitted(true);
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error response:', error.response?.status, error.response?.data);
+      
+      setSubmissionFailed(true);
+      setSubmissionError(Error(error.response?.data.message || 'Server error'));
+    } else {
+      console.error('Unexpected error:', error);
+      setSubmissionFailed(true);
+      setSubmissionError(error);
+    }
+
+    throw error;
+  }
+}
 
   const handleNextPage = () => {
     setCurrentPage(prev => prev + 1);
@@ -240,12 +293,27 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     }
     console.log(totalQuestions);
   };
+  const erroneousSubmit = () => {
+    const data: ResponseFormat = {
+      surveyID: "452325",
+      details_field:{
+        q1: "Harry",
+        q2: '5'
+      },
+      survey_responses:{
+        p1_q1: "5",
+        p1_q2: "2",
+        p1_q3: "1"
+      }
+    }; 
+    sendToServer(data);
+  };
 
   return (
     // thin responsive column
     <div className="flex flex-col items-center h-full w-md p-4 gap-5">
       {beingSubmitted ? (
-        <WhileSubmittingView />
+        <WhileSubmittingView submissionFailed={submissionFailed} submissionError={submissionError}/>
       ) : (
         <>
           <Card ref={topPageRef} className="w-full">
@@ -365,6 +433,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
             <Button className="m-2" onClick={handlePrintSurvey}>{"Print Survey responses here"}</Button>
             <Button className="m-2" onClick={functionsTestPrint}>{"Print Test Functions"}</Button>
             {(showP && <pre>{JSON.stringify(surveyResponses, null, 2)}</pre>)}
+            <Button className="m-2" onClick={erroneousSubmit}>{"Send erroneous responses"}</Button>
           </div>
         )
       }
