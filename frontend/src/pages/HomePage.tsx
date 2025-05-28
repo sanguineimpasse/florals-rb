@@ -5,7 +5,7 @@ const HomePage = () => {
   const flavorText = "Made w/ ❤️ by Group ";
   const pageTitle = "The Home of Simple Surveys";
   const pageDesc = `
-    A lightweight and customizable survey platform built with React and hosted on Vercel, 
+    This is a lightweight and customizable survey platform built with React and hosted on Vercel, 
     designed for quick and efficient data collection. Providing a clean and intuitive interface, 
     with survey content loaded from a JSON file for easy configuration.
   `;

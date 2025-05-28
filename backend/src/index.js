@@ -18,6 +18,7 @@ if(process.env.NODE_ENV !== 'production'){
 
 app.use(express.json());
 
+//Api routes
 app.use('/api', routes);
 
 // Serve the static files from the React app

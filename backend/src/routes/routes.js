@@ -8,7 +8,7 @@ const connectToDatabase = require('../lib/mongo');
 router.post('/survey/submit', async (req, res) => {
     console.log('[/survey/submit]: doing post operation');
 
-    const valid = await NutSurvValidator(req.body);
+    const valid = NutSurvValidator(req.body);
     if(!valid){
       return res.status(400).json({ message: "Invalid inputs detected." });
     }
@@ -30,7 +30,7 @@ router.post('/survey/submit', async (req, res) => {
 router.post('/test/survey/submit', async (req, res) => {
   const { surveyID, details_field, survey_responses } = req.body;
 
-  const valid = await NutSurvValidator(req.body);
+  const valid = NutSurvValidator(req.body);
 
   if(!valid){
     return res.status(400).json({ message: "Invalid inputs detected." });

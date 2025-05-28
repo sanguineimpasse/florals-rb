@@ -1,5 +1,5 @@
 import React from 'react';
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { useParams } from 'react-router';
 import { 
   Card, 
@@ -232,37 +232,37 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   };
 
   async function sendToServer(data: ResponseFormat): Promise<any> {
-  let apiAddress = `/api/survey/submit`;
-  if (import.meta.env.DEV) {
-    apiAddress = 'http://localhost:4000/api/test/survey/submit';
-  }
-
-  setBeingSubmitted(true);
-
-  try {
-    const response: AxiosResponse<any> = await axios.post(apiAddress, data, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    setFormIsSubmitted(true);
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error('Axios error response:', error.response?.status, error.response?.data);
-      
-      setSubmissionFailed(true);
-      setSubmissionError(Error(error.response?.data.message || 'Server error'));
-    } else {
-      console.error('Unexpected error:', error);
-      setSubmissionFailed(true);
-      setSubmissionError(error);
+    let apiAddress = `/api/survey/submit`;
+    if (import.meta.env.DEV) {
+      apiAddress = 'http://localhost:4000/api/test/survey/submit';
     }
 
-    throw error;
+    setBeingSubmitted(true);
+
+    try {
+      const response: AxiosResponse<any> = await axios.post(apiAddress, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      setFormIsSubmitted(true);
+      return response.data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error response:', error.response?.status, error.response?.data);
+        
+        setSubmissionFailed(true);
+        setSubmissionError(Error(error.response?.data.message || 'Server error'));
+      } else {
+        console.error('Unexpected error:', error);
+        setSubmissionFailed(true);
+        setSubmissionError(error);
+      }
+
+      throw error;
+    }
   }
-}
 
   const handleNextPage = () => {
     setCurrentPage(prev => prev + 1);

@@ -18,7 +18,7 @@ const NutSurvValidator = (survey) => {
     // if(!survey.details_field.q2 && !survey.details_field.q3){
     //   return false;
     // }
-    for(let x = 1; x <= 4; x++){
+    for(let x = 2; x <= 3; x++){
       if(!survey.details_field[`q${x}`]){
         //console.log(`details_field[q${x}] does not exist!`)
         return false;
