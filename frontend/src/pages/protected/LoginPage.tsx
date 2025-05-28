@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@radix-ui/react-label";
 
 import bgImage from '@/assets/bg-full.jpg';
-import icon from '../../../public/favicon.ico';
+import icon from '@/assets/favicon.ico';
+
+type LoginInfo = {
+  username: string,
+  password: string
+};
 
 const LoginPage = () => {
   const [isDarkMode, setIsDarkMode] = React.useState(() =>
@@ -14,18 +19,20 @@ const LoginPage = () => {
 
   React.useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
     const handleChange = (event: MediaQueryListEvent) => {
       setIsDarkMode(event.matches);
     };
-
     mediaQuery.addEventListener("change", handleChange);
-
     // Cleanup on unmount
     return () => {
       mediaQuery.removeEventListener("change", handleChange);
     };
   }, []);
+
+  const [LoginFields, setLoginFields] = React.useState<LoginInfo>({
+    username:'',
+    password:''
+  });
 
   const FlavorText = () => {
     if(!isDarkMode){
@@ -33,6 +40,10 @@ const LoginPage = () => {
     } else{
       return `The gate stands silent, awaiting the key known only to you. Speak the secret, and the path shall reveal itself.`;
     }
+  };
+
+  const handleLogin = () => {
+    console.log(LoginFields);
   };
 
   return(
@@ -54,12 +65,14 @@ const LoginPage = () => {
           <Card className="flex flex-col w-[70%]">
             <CardContent className="flex flex-col gap-3">
               <Label htmlFor="username">Username</Label>
-              <Input id="username" placeholder="your identifier" />
+              <Input id="username" placeholder="your identifier" 
+                onChange={(val) => setLoginFields({ ...LoginFields, username: val.target.value })}/>
 
               <Label htmlFor="password">Password</Label>
-              <Input id="password" placeholder="the key that opens it all"/>
+              <Input id="password" type="password" placeholder="the key that opens it all" 
+                onChange={(val) => setLoginFields({ ...LoginFields, password: val.target.value })}/>
               
-              <Button>
+              <Button onClick={handleLogin}>
                 {"Login"}
               </Button>
             </CardContent>

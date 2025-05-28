@@ -1,6 +1,8 @@
 import { NavLink } from "react-router";
 import { Button } from "@/components/ui/button";
 
+import logo from '@/assets/favicon.ico';
+
 const HomePage = () => {
   const flavorText = "Made w/ ❤️ by Group ";
   const pageTitle = "The Home of Simple Surveys";
@@ -13,6 +15,8 @@ const HomePage = () => {
     <div className="flex justify-center h-screen w-screen">
       
       <div className="flex flex-col items-center pt-52 w-96 md:w-4xl ">
+
+        <img className="m-5" src={logo} alt="Florals icon"/>
         <h3>
           {flavorText}<s>3</s> <s>6</s> <s>5</s> <s className="text-xs">We don't even know anymore 💀</s> 
         </h3>

@@ -1,6 +1,6 @@
 import React from 'react';
 import axios, { AxiosResponse } from 'axios';
-import { useParams } from 'react-router';
+import { NavLink, useParams } from 'react-router';
 import { 
   Card, 
   CardContent, 
@@ -9,6 +9,7 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import FourScaleCard from '@/components/four-scale-card';
 import TypefluidCards from '@/components/typefluid-cards';
@@ -18,7 +19,7 @@ import { DetailResponse } from '@/types/form_responses';
 import { FourScaleSurveyResponse } from '@/types/form_responses';
 import { ResponseFormat } from '@/types/response_format';
 import survey_imported from '@/data/nutrition_survey.json'
-import { Spinner } from '@/components/ui/spinner';
+
 
 const FormSubmittedView = () => {
   return(
@@ -99,9 +100,23 @@ const WhileSubmittingView = ({submissionFailed, submissionError}: WhileSubmittin
 
 const NotFoundView = () => {
   return(
-    <div className='flex flex-col h-screen justify-center'>
-      <h1 className="text-9xl p-6">{":("}</h1>
+    <div className='flex flex-col h-screen justify-center items-center'>
+      <h1 className="text-9xl p-6 text-left w-full">{":("}</h1>
       <p className='text-4xl ps-7 font-bold'>Survey not found.</p>
+      <Button className='mt-6 w-[90%]'>
+        <NavLink to="/">
+          {"Return to homepage"}
+        </NavLink>
+      </Button>
+    </div>
+  )
+};
+
+const LoadingView = () => {
+  return(
+    <div className='flex flex-col h-screen justify-center items-center gap-7'>
+      <Spinner className="w-10 h-10"/>
+      <p className='text-4xl ps-7 font-bold'>Loading survey.</p>
     </div>
   )
 };
@@ -134,6 +149,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     };
 
   }, [isDirty]);
+  //* 
 
   const [submissionError, setSubmissionError] = React.useState<any>();
   const [submissionFailed, setSubmissionFailed] = React.useState<boolean>(false);
@@ -447,24 +463,33 @@ const SurveyPage = () => {
   const params = useParams();
   const [survey, setSurvey] = React.useState<Survey | null>(null);
   const [formIsSubmitted, setFormIsSubmitted] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     if (params.id === '230724') {
       setSurvey(survey_imported);
     }
+    setIsLoading(false);
   }, [params]);
 
   return(
     <div className="flex justify-center items-center h-full w-screen overflow-y-auto">
-      {survey !== null ? (
-        !formIsSubmitted ? (
-          <MainView survey={survey} setFormIsSubmitted={setFormIsSubmitted} />
+      {isLoading ? 
+        <LoadingView/>
+      :
+      <>
+        {survey !== null ? (
+          !formIsSubmitted ? (
+            <MainView survey={survey} setFormIsSubmitted={setFormIsSubmitted} />
+          ) : (
+            <FormSubmittedView/>
+          )
         ) : (
-          <FormSubmittedView/>
-        )
-      ) : (
-        <NotFoundView/>
-      )}
+          <NotFoundView/>
+        )}
+      </>
+      }
+      
     </div>
   )
 };
