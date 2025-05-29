@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const mongoose = require('mongoose');
 
 if(process.env.NODE_ENV !== 'production'){
   const dotenv = require('dotenv').config({ path: path.join(__dirname, '../.env') });
