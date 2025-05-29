@@ -8,6 +8,7 @@ if(process.env.NODE_ENV !== 'production'){
 
 const app = express();
 const routes = require('./routes/routes');
+const adminRoutes = require('./routes/auth.routes');
 
 if(process.env.NODE_ENV !== 'production'){
   app.use(cors());
@@ -19,6 +20,7 @@ app.use(express.json());
 
 //Api routes
 app.use('/api', routes);
+app.use('/api/admin', adminRoutes);
 
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
