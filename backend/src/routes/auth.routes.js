@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { SignJWT } = require('jose');
 
 if(process.env.NODE_ENV !== 'production'){
+  const path = require('path');
   const dotenv = require('dotenv').config({ path: path.join(__dirname, '../.env') });
 }
 
@@ -91,6 +92,7 @@ router.post('/logout', (req, res) => {
 
 //checks if the user session is still valid
 router.get('/me', async (req, res) => {
+  console.log("checking user status");
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ loggedIn: false });
 

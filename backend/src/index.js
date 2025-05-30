@@ -8,19 +8,18 @@ if(process.env.NODE_ENV !== 'production'){
 
 const app = express();
 const routes = require('./routes/routes');
-const adminRoutes = require('./routes/auth.routes');
+const authRoutes = require('./routes/auth.routes');
 
 if(process.env.NODE_ENV !== 'production'){
   app.use(cors());
 }
-// app.use(cors({ origin: '*' }));
-//* note: should probably restrict origins when deploying to prod
+// app.use(cors({ origin: '*' })); //* note: should probably restrict origins when deploying to prod
 
 app.use(express.json());
 
 //Api routes
 app.use('/api', routes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admin', authRoutes);
 
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));

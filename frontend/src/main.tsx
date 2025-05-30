@@ -4,11 +4,10 @@ import { ThemeProvider } from './components/ui/theme-provider';
 import AppRouter from './AppRouter';
 import './index.css'
 
-//get user's color mode
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-const scheme = prefersDark ? 'dark' : 'light';
-
+//get user's color mode (for debugging only)
 if (import.meta.env.DEV) {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const scheme = prefersDark ? 'dark' : 'light';
   console.log(`User prefers ${scheme} mode`);
 }
 

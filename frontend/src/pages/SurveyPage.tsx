@@ -20,6 +20,7 @@ import { FourScaleSurveyResponse } from '@/types/form_responses';
 import { ResponseFormat } from '@/types/response_format';
 import survey_imported from '@/data/nutrition_survey.json'
 
+import withered from '@/assets/withered.png';
 
 const FormSubmittedView = () => {
   return(
@@ -101,9 +102,9 @@ const WhileSubmittingView = ({submissionFailed, submissionError}: WhileSubmittin
 const NotFoundView = () => {
   return(
     <div className='flex flex-col h-screen justify-center items-center'>
-      <h1 className="text-9xl p-6 text-left w-full">{":("}</h1>
+      <img className="m-8 w-[175px]" src={withered} alt="🥀"/>
       <p className='text-4xl ps-7 font-bold'>Survey not found.</p>
-      <Button className='mt-6 w-[90%]'>
+      <Button className='mt-9 w-[70%]'>
         <NavLink to="/">
           {"Return to homepage"}
         </NavLink>
@@ -459,6 +460,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   )
 };
 
+//TODO: rewrite the whole structure of the page
 const SurveyPage = () => {
   const params = useParams();
   const [survey, setSurvey] = React.useState<Survey | null>(null);
