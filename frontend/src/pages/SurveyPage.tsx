@@ -1,6 +1,8 @@
 import React from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { NavLink, useParams } from 'react-router';
+
+//reusables
 import { 
   Card, 
   CardContent, 
@@ -14,25 +16,25 @@ import { Button } from '@/components/ui/button';
 import FourScaleCard from '@/components/four-scale-card';
 import TypefluidCards from '@/components/typefluid-cards';
 
+//types
 import { Survey } from '@/types/survey_format';
 import { DetailResponse } from '@/types/form_responses';
 import { FourScaleSurveyResponse } from '@/types/form_responses';
 import { ResponseFormat } from '@/types/response_format';
-import survey_imported from '@/data/nutrition_survey.json'
 
+//assets
+import survey_imported from '@/data/nutrition_survey.json'
 import withered from '@/assets/withered.png';
 
 const FormSubmittedView = () => {
   return(
     <div className="flex flex-col items-center h-full w-md p-4 gap-5">
-
       <Card className='w-full'>
         <CardHeader>
           <CardTitle className="text-2xl">{"Response Submitted."}</CardTitle>
           <CardDescription>{"Thank you for participating in the survey! ☺️"}</CardDescription>
         </CardHeader>
       </Card>
-
     </div>
   )
 };
@@ -51,7 +53,6 @@ const WhileSubmittingView = ({submissionFailed, submissionError}: WhileSubmittin
       setShowWarning(true);
       return;
     }
-
     const timerId = setInterval(() => {
       setTimeout((prev) => prev - 1);
     }, 1000);
@@ -72,7 +73,7 @@ const WhileSubmittingView = ({submissionFailed, submissionError}: WhileSubmittin
             <>
               <CardTitle className="text-2xl text-destructive">{"Submission Error"}</CardTitle>
               <CardDescription className='text-destructive'>
-                {"Please reload this page and try again. If the error persists, contact the administrator of this website."}
+                {"Please reload this page and try again. If the error persists, contact the administrator of this webpage."}
               </CardDescription>
             </>
           )}
@@ -83,8 +84,6 @@ const WhileSubmittingView = ({submissionFailed, submissionError}: WhileSubmittin
           </CardContent>
         }
       </Card>
-
-      
 
       {!submissionFailed &&
         <>
@@ -127,6 +126,7 @@ interface MainPageProps {
   setFormIsSubmitted: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+//! MAIN SURVEY VIEW
 const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   const topPageRef = React.useRef<HTMLDivElement>(null);
 
@@ -150,21 +150,22 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     };
 
   }, [isDirty]);
-  //* 
 
-  const [submissionError, setSubmissionError] = React.useState<any>();
-  const [submissionFailed, setSubmissionFailed] = React.useState<boolean>(false);
-
+  //* PAGE TRAVERSAL STATES
   const [onPreForm, setOnPreForm] = React.useState<boolean>(true); //pre form means before the (actual) survey thing lmaoo
-
   const [currentPage, setCurrentPage] = React.useState<number>(0);
 
+  //* INPUT VALIDATION STATES
   const [preFormResponses, setPreFormResponses] = React.useState<DetailResponse>({});
   const [surveyResponses, setSurveyResponses] = React.useState<FourScaleSurveyResponse>({});
-
   const [preFormErrors, setPreFormErrors] = React.useState<DetailResponse>({});
   const [surveyResponseErrors, setSurveyResponseErrors] = React.useState<FourScaleSurveyResponse>({});
+
+  //* SUBMISSION STATE HOLDERS (idk what to call them bruh)
+  const [submissionError, setSubmissionError] = React.useState<any>();
+  const [submissionFailed, setSubmissionFailed] = React.useState<boolean>(false);
  
+  //* HANDLERS FOR THE PRE-FORM
   const handlePreFormResponse = ( id: string, response: string) => {
     if(!isDirty){
       setIsDirty(true);
@@ -178,6 +179,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     //console.log(preFormResponses);
     //* validation
     //* run through every field and check if it's optional, if not, then check if it has an answer
+      //* else, run other validation checks
     let valid = true; 
     for (let x = 0; x < survey.details_field.fields.length; x++) {
       const field = survey.details_field.fields[x];
@@ -203,6 +205,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     }
   };
 
+  //* HANDLERS FOR THE SURVEY RESPONSES
   const handleSurveyResponse = ( id: string, response: string) => {
     setSurveyResponses(prev => ({...prev, [id]: response }));
   };
@@ -210,7 +213,6 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     setSurveyResponseErrors(prev => ({...prev, [id]: response }));
   };
   const handleSurveySubmission = () => {
-    //* validation here
     // just check if there are answers for all the questions
     let valid = true; 
 
@@ -236,6 +238,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
 
   const [beingSubmitted, setBeingSubmitted] = React.useState<boolean>(false);
 
+  //* MAIN SUBMISSION ROUTINES
   //* this kickstarts the api submission >:) (chaos and things will happen)
   const handleSubmission = () => {
     // console.log("Submitting form");
@@ -268,7 +271,6 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error('Axios error response:', error.response?.status, error.response?.data);
-        
         setSubmissionFailed(true);
         setSubmissionError(Error(error.response?.data.message || 'Server error'));
       } else {
@@ -281,13 +283,15 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
     }
   }
 
+
+  //* PAGE HANDLING
   const handleNextPage = () => {
     setCurrentPage(prev => prev + 1);
   };
   const handlePrevPage = () => {
     setCurrentPage(prev => prev - 1);
   }
-
+  //scrolls to the top when moving between pages
   React.useEffect(() => {
     topPageRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentPage]);
@@ -313,10 +317,12 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   const erroneousSubmit = () => {
     const data: ResponseFormat = {
       surveyID: "452325",
+      //q3 is required but has no response
       details_field:{
         q1: "Harry",
         q2: '5'
       },
+      //only 3 out of 20 questions have responses
       survey_responses:{
         p1_q1: "5",
         p1_q2: "2",
@@ -327,7 +333,9 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
   };
 
   return (
-    // thin responsive column
+    // CONDITIONS:
+      // is the form being submitted? if not, show the survey
+      // is the pre-form done (the details field)? if yes, show the main survey questions
     <div className="flex flex-col items-center h-full w-md p-4 gap-5">
       {beingSubmitted ? (
         <WhileSubmittingView submissionFailed={submissionFailed} submissionError={submissionError}/>
@@ -390,7 +398,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
             </>
           ) : ( 
             <>
-              {/* //! main survey thing */}
+              {/*//* main survey thing */}
               <Card className="w-full gap-3">
                 <CardHeader>
                   <CardTitle className="leading-5">
@@ -476,21 +484,21 @@ const SurveyPage = () => {
 
   return(
     <div className="flex justify-center items-center h-full w-screen overflow-y-auto">
-      {isLoading ? 
+      {isLoading ? (
         <LoadingView/>
-      :
-      <>
-        {survey !== null ? (
-          !formIsSubmitted ? (
-            <MainView survey={survey} setFormIsSubmitted={setFormIsSubmitted} />
+      ):(
+        <>
+          {survey !== null ? (
+            !formIsSubmitted ? (
+              <MainView survey={survey} setFormIsSubmitted={setFormIsSubmitted} />
+            ) : (
+              <FormSubmittedView/>
+            )
           ) : (
-            <FormSubmittedView/>
-          )
-        ) : (
-          <NotFoundView/>
-        )}
-      </>
-      }
+            <NotFoundView/>
+          )}
+        </>
+      )}
       
     </div>
   )
