@@ -1,7 +1,5 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { SignJWT } = require('jose');
-const { jwtVerify } = require('jose');
 
 if(process.env.NODE_ENV !== 'production'){
   const path = require('path');
@@ -45,6 +43,8 @@ router.post('/create-user', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
+  const { SignJWT } = await import('jose');
+
   //return res.status(403).json({message: "This route is locked - for now..."});
   enableDebug && console.log("loggin user in...");
   const {username, password} = req.body;
@@ -98,6 +98,8 @@ router.post('/logout', (req, res) => {
 
 //checks if the user session is still valid
 router.get('/session', async (req, res) => {
+  const { jwtVerify } = await import('jose');
+  
   enableDebug && console.log("checking user status");
   
   const token = req.cookies.token;
