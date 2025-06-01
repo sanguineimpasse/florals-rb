@@ -109,12 +109,12 @@ const MainView = () => {
         console.error('Axios error response:', error.response?.status, error.response?.data);
         setIsLoggingIn(false);
         setLoginFailed(true);
-        setLoginError(Error(error.response?.data.message || 'Server error'));
+        setLoginError("500: Server Error");
       } else {
         console.error('Unexpected error:', error);
         setIsLoggingIn(false);
         setLoginFailed(true);
-        setLoginError(error);
+        setLoginError("500: Server Error");
       }
 
       throw error;
@@ -143,11 +143,11 @@ const MainView = () => {
             <Card className="flex flex-col w-[70%]">
               <CardContent className="flex flex-col gap-3" onKeyDown={handleKeyDown}>
                 <Label htmlFor="username">Username</Label>
-                <Input id="username" placeholder="your identifier" role="textbox"
+                <Input id="username" placeholder="your identifier"
                   onChange={(val) => setLoginFields({ ...LoginFields, username: val.target.value })}/>
 
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="the key that opens it all"  role="textbox"
+                <Input id="password" type="password" placeholder="the key that opens it all" 
                   onChange={(val) => setLoginFields({ ...LoginFields, password: val.target.value })}/>
                 
                 <Button onClick={handleLogin}>

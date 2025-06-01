@@ -18,7 +18,7 @@ function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log("Checking if user is logged in...");
+    //console.log("Checking if user is logged in...");
     const checkSession = async () => {
       try {
         let apiAddress = '/api/admin/session';
