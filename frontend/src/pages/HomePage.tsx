@@ -14,7 +14,7 @@ const HomePage = () => {
   return(
     <div className="flex justify-center h-screen w-screen">
       
-      <div className="flex flex-col items-center justify-center w-96 md:w-4xl ">
+      <div className="flex flex-col items-center mt-10 md:mt-0 md:justify-center w-96 md:w-4xl ">
 
         <img className="m-5" src={logo} alt="Florals icon"/>
         <h3>

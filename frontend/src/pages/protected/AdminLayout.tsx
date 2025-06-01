@@ -49,7 +49,7 @@ const ProtectedContent = () => {
 
   if (isLoading) return(
     <div className='w-full h-full bg-background'>
-      <p>Loading auth...</p>
+      {/* <p>Loading auth...</p> */}
     </div>
   )
   if (!isLoggedIn) return <Navigate to="/login" replace />;
