@@ -25,11 +25,11 @@ function AuthProvider({ children }: AuthProviderProps) {
         if (import.meta.env.DEV) {
           apiAddress = 'http://localhost:4000/api/admin/session';
         }
-        const res = await axios.get(apiAddress, { withCredentials: true });
-        setIsLoggedIn(res.status === 200);
-        console.log("User is logged in");
-      } catch {
-        console.log("User is NOT logged in");
+        const res: any = await axios.get(apiAddress, { withCredentials: true });
+        //console.log(res.data.isLoggedIn ? "User is logged in" : "User is NOT logged in");
+        setIsLoggedIn(res.data.isLoggedIn);
+      } catch(error){
+        //console.error("Error in session validation (most likely a connection time-out)");
         setIsLoggedIn(false);
       } finally {
         setIsLoading(false);

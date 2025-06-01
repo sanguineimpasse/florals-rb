@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { SignJWT } = require('jose');
+const { jwtVerify } = require('jose');
 
 if(process.env.NODE_ENV !== 'production'){
   const path = require('path');
@@ -12,6 +13,8 @@ const User = require('../models/user');
 const connectToDatabase = require('../lib/mongo');
 
 const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+const enableDebug = true;
 
 router.post('/create-user', async (req, res) => {
   return res.status(403).json({message: "This route is locked - for now..."});
@@ -43,6 +46,7 @@ router.post('/create-user', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   //return res.status(403).json({message: "This route is locked - for now..."});
+  enableDebug && console.log("loggin user in...");
   const {username, password} = req.body;
 
   //simple input validation
@@ -67,11 +71,12 @@ router.post('/login', async (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 60 * 24 // millis * secs * mins * hours
+      secure: process.env.NODE_ENV === 'production', // only use 'secure' in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // 'none' allows cross-origin
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
     });
 
+    enableDebug && console.log('login success');
     res.status(200).json({ message: 'Login success' });
   } catch(error){
     console.error('Login error:', error);
@@ -81,26 +86,33 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
+  console.log("logging user out")
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
   });
 
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
 //checks if the user session is still valid
-router.post('/session', async (req, res) => {
-  console.log("checking user status");
+router.get('/session', async (req, res) => {
+  enableDebug && console.log("checking user status");
+  
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ loggedIn: false });
+  if (!token){
+    enableDebug && console.log("user is not logged in");
+    return res.status(200).json({ isLoggedIn: false });
+  }
 
   try {
     const { payload } = await jwtVerify(token, jwtSecret);
-    res.status(200).json({ loggedIn: true, userId: payload.userId });
-  } catch (err) {
-    res.status(401).json({ loggedIn: false });
+    enableDebug && console.log("user is logged in");
+    res.status(200).json({ isLoggedIn: true, userId: payload.userId });
+  } catch (error) {
+    enableDebug && console.log("server error while checking user session \n" + error);
+    res.status(500).json({ message: JSON.stringify(error) });
   }
 });
 

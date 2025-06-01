@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 const cors = require('cors');
 
@@ -11,11 +12,14 @@ const routes = require('./routes/routes');
 const authRoutes = require('./routes/auth.routes');
 
 if(process.env.NODE_ENV !== 'production'){
-  app.use(cors());
-}
-// app.use(cors({ origin: '*' })); //* note: should probably restrict origins when deploying to prod
+  app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+  }));
+};
 
 app.use(express.json());
+app.use(cookieParser());
 
 //Api routes
 app.use('/api', routes);
