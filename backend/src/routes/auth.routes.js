@@ -12,7 +12,7 @@ const connectToDatabase = require('../lib/mongo');
 
 const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-const enableDebug = true;
+const enableDebug = false;
 
 router.post('/create-user', async (req, res) => {
   return res.status(403).json({message: "This route is locked - for now..."});

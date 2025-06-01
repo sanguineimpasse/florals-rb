@@ -35,7 +35,7 @@ const TopNav = () => {
   return(
     <div className='flex flex-row justify-center items-center w-full h-16 bg-secondary p-2'>
       <img className='w-[40px] m-2' src={icon} alt="Florals icon" />
-      <h1 className='text-white'>{"Florals"}</h1>
+      <h1>{"Florals"}</h1>
       <div className="w-full"></div>
       <Button className='' onClick={handleLogout}>
         {"Logout"}
@@ -47,7 +47,11 @@ const TopNav = () => {
 const ProtectedContent = () => {
   const {isLoggedIn, isLoading} = useAuth();
 
-  if (isLoading) return <p>Loading auth...</p>;
+  if (isLoading) return(
+    <div className='w-full h-full bg-background'>
+      <p>Loading auth...</p>
+    </div>
+  )
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
   return (

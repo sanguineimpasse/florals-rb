@@ -24,13 +24,13 @@ const MainView = () => {
   const {isLoggedIn, isLoading} = useAuth();
 
   React.useEffect(() => {
-    if(isLoggedIn){
+    if(!isLoading && isLoggedIn){
       navigate('/admin');
     }
     // else{
     //   console.log("LoginPage: User is not logged in");
     // }
-  },[]);
+  },[isLoggedIn]);
 
   const [isDarkMode, setIsDarkMode] = React.useState(() =>
     window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -52,12 +52,12 @@ const MainView = () => {
     if(!isDarkMode){
       return {
         header: `Access is granted not by presence, but by proof — submit your credentials, and the barrier shall discern your intent.`,
-        loading: `leaves are flowing under the canopy of light`
+        loading: `leaves are flowing under the canopy of light - await as your credentials are proofed`
       };
     } else{
       return {
         header: `The gate stands silent, awaiting the key known only to you. Speak the secret, and the path shall reveal itself.`,
-        loading: `petals stir and circuits breathe - verifying the one who seeks passage`
+        loading: `petals stir, circuits breathe, reaching out for the key - verifying the one who seeks passage`
       };
     }
   };
