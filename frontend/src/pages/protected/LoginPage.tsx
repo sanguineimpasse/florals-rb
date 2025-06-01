@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Label } from "@radix-ui/react-label";
 
 import bgImage from '@/assets/bg-full.jpg';
 import icon from '@/assets/favicon.ico';
+import { useNavigate } from "react-router";
 
 type LoginInfo = {
   username: string,
@@ -13,6 +15,8 @@ type LoginInfo = {
 };
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+
   const [isDarkMode, setIsDarkMode] = React.useState(() =>
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
@@ -28,12 +32,7 @@ const LoginPage = () => {
       mediaQuery.removeEventListener("change", handleChange);
     };
   }, []);
-
-  const [LoginFields, setLoginFields] = React.useState<LoginInfo>({
-    username:'',
-    password:''
-  });
-
+  
   const FlavorText = () => {
     if(!isDarkMode){
       return `Access is granted not by presence, but by proof — submit your credentials, and the barrier shall discern your intent.`;
@@ -42,7 +41,19 @@ const LoginPage = () => {
     }
   };
 
+  const [LoginFields, setLoginFields] = React.useState<LoginInfo>({
+    username:'',
+    password:''
+  });
+
   const handleLogin = () => {
+    if(!LoginFields.username || !LoginFields.password || LoginFields.username === '' || LoginFields.password === ''){
+      return console.error('Invalid inputs');
+    }
+    LoginUser();
+  };
+
+  const LoginUser = async () => {
     console.log(LoginFields);
   };
 
@@ -57,7 +68,7 @@ const LoginPage = () => {
           <img className="h-[70vw] max-h-full w-full object-cover rounded-sm shadow-md" src={bgImage} alt="decorative image"/>
         </div>
         {/* col 2 */}
-        <div className="flex flex-col sm:w-xl lg:w-1/2 p-4 items-center mt-[8%] gap-6">
+        <div className="flex flex-col sm:w-xl lg:w-1/2 p-4 items-center mt-[2rem] gap-6">
           <img src={icon} alt="Florals icon" />
           <h1 className="text-xl md:text-2xl xl:text-3xl w-[70%] italic leading-normal">
             {<FlavorText/>}

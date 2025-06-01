@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24 // millis * secs * mins * hours
     });
 
-    res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ message: 'Login success' });
   } catch(error){
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error: Failed to login' });
@@ -91,7 +91,7 @@ router.post('/logout', (req, res) => {
 });
 
 //checks if the user session is still valid
-router.get('/me', async (req, res) => {
+router.post('/session', async (req, res) => {
   console.log("checking user status");
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ loggedIn: false });
