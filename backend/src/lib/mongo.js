@@ -6,13 +6,13 @@ if(process.env.NODE_ENV !== 'production'){
 
 let isConnected = false;
 
-async function connectToDatabase() {
+async function connectToDatabase(timeout = 10000) {
   if (isConnected) return;
 
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
       bufferCommands: false,
-      connectTimeoutMS: 10000,
+      connectTimeoutMS: timeout,
     });
 
     isConnected = true;

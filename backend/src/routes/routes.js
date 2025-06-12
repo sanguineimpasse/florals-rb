@@ -13,8 +13,8 @@ router.post('/survey/submit', async (req, res) => {
     return res.status(400).json({ message: "Invalid inputs detected." });
   }
 
-  await connectToDatabase(); 
   try {
+    await connectToDatabase();
     const survey = new SurveyResponse(req.body);
     await survey.validate();
     await survey.save();
@@ -22,8 +22,8 @@ router.post('/survey/submit', async (req, res) => {
     const response = { message: "Success"};
     res.status(201).json({ response });
   } catch (error) {
-    console.error('Error submitting response:', error);
-    res.status(500).json({ message: 'Internal Server Error: Failed to submit response' });
+    console.error('Error submitting response:', JSON.stringify(error));
+    res.status(500).json({ message: 'Internal Server Error — Failed to submit response', error: error });
   }
 });
 
@@ -58,7 +58,7 @@ router.get('/dbhealth', async (req,res) =>{
     await connectToDatabase();
     res.status(200).json({mesage: "database is running"});
   }catch(error){
-    res.status(500).json({ message: `database is not responding. ${error}`});
+    res.status(500).json({ message: `database is not responding. (${JSON.stringify(error)})`});
   };
 });
 

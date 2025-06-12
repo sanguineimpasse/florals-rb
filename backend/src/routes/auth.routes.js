@@ -86,7 +86,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  console.log("logging user out")
+  //console.log("logging user out")
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -98,7 +98,7 @@ router.post('/logout', (req, res) => {
 
 //checks if the user session is still valid
 router.get('/session', async (req, res) => {
-  const { jwtVerify } = await import('jose');
+  const { jwtVerify } = await import('jose'); //can't be imported using commonjs syntax
   
   enableDebug && console.log("checking user status");
   

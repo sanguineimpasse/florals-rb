@@ -10,6 +10,7 @@ if(process.env.NODE_ENV !== 'production'){
 const app = express();
 const routes = require('./routes/routes');
 const authRoutes = require('./routes/auth.routes');
+const dataRoutes = require('./routes/data.routes');
 
 if(process.env.NODE_ENV !== 'production'){
   app.use(cors({
@@ -24,6 +25,7 @@ app.use(cookieParser());
 //Api routes
 app.use('/api', routes);
 app.use('/api/admin', authRoutes);
+app.use('/api/data', dataRoutes);
 
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));

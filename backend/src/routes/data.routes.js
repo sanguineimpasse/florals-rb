@@ -6,7 +6,73 @@ if(process.env.NODE_ENV !== 'production'){
 }
 
 const router = express.Router();
+const SurveyResponse = require('../models/SurveyResponse');
+const connectToDatabase = require('../lib/mongo');
+
+const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+const enableDebug = true;
+
+//helper functions here
+async function isTokenValid(token){
+  const { jwtVerify } = await import('jose');
+  
+  try {
+    await jwtVerify(token, jwtSecret);
+    enableDebug && console.log("token is valid");
+    return true;
+  } catch (error) {
+    enableDebug && console.log("token is invalid \n" + error);
+    return false;
+  }
+}
 
 //routes here
+router.get('/get-responses', async (req, res) => {
+  enableDebug && console.log("attempting to create responses view for frontend");
+
+  const token = req.cookies.token;
+  if (!token){
+    enableDebug && console.log("token is invalid");
+    return res.status(401).json({ message: "Invalid token" });
+  }
+
+  //verify if token is valid
+  if(!isTokenValid(token)) {
+    enableDebug && console.log("token is invalid");
+    return res.status(401).json({ message: "Invalid token" });
+  }
+
+  try {
+    await connectToDatabase(160000); 
+    // const result = await SurveyResponse.aggregate([]);
+    const docs = await SurveyResponse.find().lean();
+    const tally = {};
+
+    for (const doc of docs) {
+      for (const parentKey of ["details_field", "survey_responses"]) {
+        
+        if (!doc[parentKey]) continue;
+
+        for (const key in doc[parentKey]) {
+          //console.log(`for parentkey ${parentKey}: key ${key}`);
+          const value = String(doc[parentKey][key]);
+          const fullKey = `${parentKey}.${key}`; // e.g. "responses.p1_q3"
+
+          tally[fullKey] = tally[fullKey] || {};
+          tally[fullKey][value] = (tally[fullKey][value] || 0) + 1;
+        }
+      }
+    }
+
+    res.json(tally);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: JSON.stringify(error) });
+  }
+
+});
+
+
 
 module.exports = router;
