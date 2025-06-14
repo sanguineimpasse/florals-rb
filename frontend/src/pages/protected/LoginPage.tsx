@@ -79,7 +79,7 @@ const MainView = () => {
   const handleLogin = () => {
     if(!LoginFields.username || !LoginFields.password || LoginFields.username === '' || LoginFields.password === ''){
       setLoginFailed(true);
-      setLoginError("username or password is incorrect.");
+      setLoginError("enter your username and password.");
       return <></>;
     }
     LoginUser();
@@ -142,17 +142,19 @@ const MainView = () => {
           {!isLoggingIn ? (
             <Card className="flex flex-col w-[70%]">
               <CardContent className="flex flex-col gap-3" onKeyDown={handleKeyDown}>
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" placeholder="your identifier"
-                  onChange={(val) => setLoginFields({ ...LoginFields, username: val.target.value })}/>
+                <form className="flex flex-col gap-3">
+                  <Label htmlFor="username">Username</Label>
+                  <Input id="username" placeholder="your identifier"
+                    onChange={(val) => setLoginFields({ ...LoginFields, username: val.target.value })}/>
 
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="the key that opens it all" 
-                  onChange={(val) => setLoginFields({ ...LoginFields, password: val.target.value })}/>
-                
-                <Button onClick={handleLogin}>
-                  {"Login"}
-                </Button>
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" type="password" placeholder="the key that opens it all" 
+                    onChange={(val) => setLoginFields({ ...LoginFields, password: val.target.value })}/>
+                  
+                  <Button onClick={handleLogin}>
+                    {"Login"}
+                  </Button>
+                </form>
               </CardContent>
               {loginFailed &&
                 <CardFooter>

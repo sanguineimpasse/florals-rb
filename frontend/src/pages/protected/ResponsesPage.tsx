@@ -1,0 +1,206 @@
+import React from "react";
+import { useParams } from "react-router";
+import axios, { AxiosResponse } from "axios";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+
+import Survey from "@/types/survey_format";
+
+import nut_survey from "@/data/nutrition_survey.json";
+import sample_tally from "@/data/sample_responsetally.json";
+import ResponseChart from "@/components/responsechart";
+
+const ResponsesPage = () => {
+  const params = useParams();
+
+  const [idIsValid, setIdIsValid] = React.useState(false);
+  const [viewIsLoading, setViewIsLoading] = React.useState(true);
+
+  const [survey, setSurvey] = React.useState<Survey|null>(null);
+
+  //* any na lang to tinatamad na ako
+  const [responseTally, setResponseTally] = React.useState<any>();
+
+  React.useEffect(() => {
+    if (params.id === '230724') {
+      setSurvey(nut_survey);
+      setResponseTally(sample_tally);
+      setIdIsValid(true);
+    }
+    setViewIsLoading(false);
+  }, [params]);
+
+  
+  const [tallyShown, setTallyShown] = React.useState(false);
+  const [tallyLoading, setTallyLoading] = React.useState(true);
+  const [retrievalFailed, setRetrievalFailed] = React.useState(false);
+  const [retrievalError, setRetrievalError] = React.useState<any>();
+  const [tallyData, setTallyData] = React.useState<any>();
+
+  const [debugShowData, setDebugShowData] = React.useState(false);
+
+  function handleFormRet(){
+    setTallyShown(true);
+    setTallyLoading(false);
+    //queryDB();
+  }
+
+  async function queryDB(): Promise<any>{
+    let apiAddress = `/api/data/get-responses`;
+    if (import.meta.env.DEV) {
+      apiAddress = 'http://localhost:4000/api/data/get-responses';
+    }
+
+    try{
+      const response: AxiosResponse<any> = await axios.get(apiAddress, {
+        withCredentials: true // ensures cookies are sent with CORS requests if needed
+      });
+      if (import.meta.env.DEV) {
+        console.log(response);
+      }
+      setTallyData(response);
+      setTallyLoading(false);
+    }catch(error: unknown){
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error response:', error.response?.status, error.response?.data);
+        setTallyLoading(false);
+        setRetrievalFailed(true);
+        setRetrievalError("Axios error: " + error.message);
+      } else {
+        console.error('Unexpected error:', error);
+        setTallyLoading(false);
+        setRetrievalFailed(true);
+        setRetrievalError("Unexpected error" + error);
+      }
+
+      throw error;
+    }
+  }
+
+  function handleDebugCard(){
+    if(debugShowData){
+      setDebugShowData(false);
+    }else{
+      setDebugShowData(true);
+    }
+  }
+
+  const tallyCardResponses = () => {
+
+    return(
+      survey && survey.details_field.fields.map((field)=>(
+        <Card className="w-xl mt-2" key={field.id}>
+          <CardHeader>
+            {`${field.title}`}
+          </CardHeader>
+          <CardContent>
+            <pre className="text-sm">{JSON.stringify(responseTally[`survey_responses.${field.id}`], null, 2)}</pre>
+          </CardContent>
+        </Card>
+      ))
+    )
+  }
+
+  const cardClasses = "w-[100%] md:w-lg mt-2";
+
+  return(
+    <>
+    {idIsValid ? (
+      <div className="flex flex-col justify-center h-full w-screen">
+        <h1 className="text-left w-[100%] text-xl ps-5 pt-5">Viewing responses for <span className="font-bold">Nutrition Survey</span></h1>
+        <div className="p-5 gap-4">
+          {!tallyShown ? (
+            <>
+              <Card className="w-md">
+                <CardContent>
+                  {"Note from admin: PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
+                </CardContent>
+                <CardFooter>
+                  <Button className="" onClick={handleFormRet}>Display form responses</Button>
+                </CardFooter>
+              </Card>
+            </>
+          ):(
+            tallyLoading ? (
+              <>
+                <h1 className="mb-3">Loading the tally...</h1>
+                <Spinner className="w-10 h-10"/>
+              </>
+            ):(
+              retrievalFailed ? (
+                <Card>
+                  <CardContent>
+                    <h1 className="text-destructive">Retrieval Error</h1>
+                      <p className="text-destructive">{retrievalError}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  { false &&
+                    <Card className="w-md">
+                      <CardHeader>
+                        <Button variant="outline" onClick={handleDebugCard}>
+                          {!debugShowData ? "show raw data ▼" : "hide raw data ▲"}
+                        </Button>
+                      </CardHeader>
+                      { debugShowData &&
+                        <CardContent>
+                          <pre className="text-sm">{JSON.stringify(tallyData.data, null, 2)}</pre>
+                        </CardContent>
+                      }
+                    </Card>
+                  }
+
+                  {/* //!THESE CARDS WILL SHOW THE RESPONSES */}
+                  {survey && survey.details_field.fields.map((field)=>(
+                    <Card className={cardClasses} key={field.id}>
+                      <CardHeader>
+                        {`${field.title}`}
+                      </CardHeader>
+                      <CardContent>
+                        {false && <pre className="text-sm">{JSON.stringify(responseTally[`details_field.${field.id}`], null, 2)}</pre>}
+                        <ResponseChart
+                          rawData={responseTally[`details_field.${field.id}`]}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {survey && survey.pages.map((page)=>(
+                    page.questions.map((question)=>(
+                      <Card className={cardClasses} key={question.id}>
+                        <CardHeader>
+                          {`${question.question}`}
+                        </CardHeader>
+                        <CardContent>
+                          {false && <pre className="text-sm">{JSON.stringify(responseTally[`survey_responses.${question.id}`], null, 2)}</pre>}
+                          <ResponseChart
+                            rawData={responseTally[`survey_responses.${question.id}`]}
+                          />
+                        </CardContent>
+                      </Card>
+                    ))
+                  ))}
+                  
+                </>
+              )
+            )
+          )}
+        </div>
+      </div>
+    ) :(
+      viewIsLoading ? (
+        <></>
+      ):(
+        <div className="p-10">
+          <h1 className="text-3xl text-destructive font-bold">{"Unable show responses"}</h1>
+          <p className="mt-2 ">{"Survey Not Found"}</p>
+        </div>
+      )
+    )}
+    </>
+  )
+}
+
+export default ResponsesPage;

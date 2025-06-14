@@ -50,6 +50,7 @@ const NutSurvValidator = (survey) => {
 
     return true;
   } catch(error){
+    enableDebug && console.log(error)
     return false;
   }
 };

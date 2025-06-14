@@ -80,7 +80,7 @@ const WhileSubmittingView = ({submissionFailed, submissionError}: WhileSubmittin
         </CardHeader>
         {submissionFailed && 
           <CardContent>
-            <p className='text-xs text-destructive'>{`Error: ${submissionError.message}`}</p>
+            <p className='text-xs text-destructive'>{`Error: ${submissionError}`}</p>
           </CardContent>
         }
       </Card>
@@ -272,7 +272,7 @@ const MainView = ({survey, setFormIsSubmitted} : MainPageProps) => {
       if (axios.isAxiosError(error)) {
         console.error('Axios error response:', error.response?.status, error.response?.data);
         setSubmissionFailed(true);
-        setSubmissionError(Error(error.response?.data.message || 'Server error'));
+        setSubmissionError("Axios error: " + error.message);
       } else {
         console.error('Unexpected error:', error);
         setSubmissionFailed(true);

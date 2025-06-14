@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
-import { Outlet, Navigate } from 'react-router';
+import { Outlet, Navigate, NavLink } from 'react-router';
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
 
 import { Button } from '@/components/ui/button';
@@ -33,14 +33,16 @@ const handleLogout = async () => {
 
 const TopNav = () => {
   return(
-    <div className='flex flex-row justify-center items-center w-full h-16 bg-secondary p-2'>
-      <img className='w-[40px] m-2' src={icon} alt="Florals icon" />
-      <h1>{"Florals"}</h1>
-      <div className="w-full"></div>
-      <Button className='' onClick={handleLogout}>
-        {"Logout"}
-      </Button>
-    </div>
+    <NavLink to="/admin">
+      <div className='flex flex-row justify-center items-center w-full h-16 bg-secondary p-2'>
+        <img className='w-[40px] m-2' src={icon} alt="Florals icon" />
+        <h1>{"Florals"}</h1>
+        <div className="w-full"></div>
+        <Button className='' onClick={handleLogout}>
+          {"Logout"}
+        </Button>
+      </div>
+    </NavLink>
   )
 };
 

@@ -17,7 +17,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
-  --background: oklch(0.9633 0.0318 135.29);
+  --background: oklch(0.9633 0.0188 135.29);
   --foreground: oklch(0.229 0.042 135.295);
   --card: oklch(1 0.0218 155.29);
   --card-foreground: oklch(0.229 0.042 135.295);
@@ -35,6 +35,7 @@
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
   --ring: oklch(0.704 0.04 135);
+  --chart-1: oklch(0.6 0.118 360.704);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);

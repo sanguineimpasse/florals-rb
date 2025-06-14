@@ -11,7 +11,7 @@ const connectToDatabase = require('../lib/mongo');
 
 const jwtSecret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-const enableDebug = true;
+const enableDebug = false;
 
 //helper functions here
 async function isTokenValid(token){
@@ -49,6 +49,8 @@ router.get('/get-responses', async (req, res) => {
     const docs = await SurveyResponse.find().lean();
     const tally = {};
 
+    tally["total_responses"] = docs.length;
+
     for (const doc of docs) {
       for (const parentKey of ["details_field", "survey_responses"]) {
         
@@ -65,7 +67,7 @@ router.get('/get-responses', async (req, res) => {
       }
     }
 
-    res.json(tally);
+    res.status(200).json(tally);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: JSON.stringify(error) });

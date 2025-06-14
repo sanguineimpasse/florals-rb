@@ -2,9 +2,12 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 import HomePage from '@/pages/HomePage';
 import SurveyPage from '@/pages/SurveyPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+
+//protected pages
 import AdminLayout from './pages/protected/AdminLayout';
 import DashboardPage from '@/pages/protected/Dashboard';
 import LoginPage from './pages/protected/LoginPage';
+import ResponsesPage from './pages/protected/ResponsesPage';
 
 
 const AppRouter = () => {
@@ -17,6 +20,7 @@ const AppRouter = () => {
         <Route path="/login" element={<LoginPage />}/>
         <Route path="/admin" element={<AdminLayout/>}>
           <Route index element={<DashboardPage />}/>
+          <Route path="/admin/responses/:id" element={<ResponsesPage/>}/>
         </Route>
         
         <Route path="*" element={<NotFoundPage />}/> 
