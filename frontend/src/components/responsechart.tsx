@@ -7,21 +7,47 @@ type Response = {
 
 type ChartProps = {
   rawData: Response
+  type?: string
+}
+
+function keyRenamer(key:string){
+  switch(key){
+    case "1":
+      return "Never"
+    case "2":
+      return "Seldom"
+    case "3":
+      return "Often"
+    case "4":
+      return "Always"
+    default:
+      return key;
+  }
 }
 
 const ResponseChart = ({
-  rawData
+  rawData,
+  type
 }: ChartProps) => {
 
   const [chartData, setChartData] = React.useState<Response[]>();
 
   React.useEffect(()=>{
-    const converted = Object.entries(rawData).map(([key, value]) => ({
-      name: key,
-      value,
-    }));
-    setChartData(converted);
-    console.log(chartData);
+    if(type==="survresponses"){
+      const converted = Object.entries(rawData).map(([key, value]) => ({
+        name: keyRenamer(key),
+        value,
+      }));
+      setChartData(converted);
+    }else{
+      const converted = Object.entries(rawData).map(([key, value]) => ({
+        name: key,
+        value,
+      }));
+      setChartData(converted);
+    }
+    
+    //console.log(chartData);
   },[rawData]);
 
   const [colors, setColors] = React.useState<string[]>([]);

@@ -43,8 +43,7 @@ const ResponsesPage = () => {
 
   function handleFormRet(){
     setTallyShown(true);
-    setTallyLoading(false);
-    //queryDB();
+    queryDB();
   }
 
   async function queryDB(): Promise<any>{
@@ -60,7 +59,7 @@ const ResponsesPage = () => {
       if (import.meta.env.DEV) {
         console.log(response);
       }
-      setTallyData(response);
+      setTallyData(response.data);
       setTallyLoading(false);
     }catch(error: unknown){
       if (axios.isAxiosError(error)) {
@@ -85,22 +84,6 @@ const ResponsesPage = () => {
     }else{
       setDebugShowData(true);
     }
-  }
-
-  const tallyCardResponses = () => {
-
-    return(
-      survey && survey.details_field.fields.map((field)=>(
-        <Card className="w-xl mt-2" key={field.id}>
-          <CardHeader>
-            {`${field.title}`}
-          </CardHeader>
-          <CardContent>
-            <pre className="text-sm">{JSON.stringify(responseTally[`survey_responses.${field.id}`], null, 2)}</pre>
-          </CardContent>
-        </Card>
-      ))
-    )
   }
 
   const cardClasses = "w-[100%] md:w-lg mt-2";
@@ -147,7 +130,7 @@ const ResponsesPage = () => {
                       </CardHeader>
                       { debugShowData &&
                         <CardContent>
-                          <pre className="text-sm">{JSON.stringify(tallyData.data, null, 2)}</pre>
+                          <pre className="text-sm">{JSON.stringify(tallyData, null, 2)}</pre>
                         </CardContent>
                       }
                     </Card>
@@ -160,9 +143,10 @@ const ResponsesPage = () => {
                         {`${field.title}`}
                       </CardHeader>
                       <CardContent>
-                        {false && <pre className="text-sm">{JSON.stringify(responseTally[`details_field.${field.id}`], null, 2)}</pre>}
+                        {false && <pre className="text-sm">{JSON.stringify(tallyData[`details_field.${field.id}`], null, 2)}</pre>}
                         <ResponseChart
-                          rawData={responseTally[`details_field.${field.id}`]}
+                          rawData={tallyData[`details_field.${field.id}`]}
+                          type="detfield"
                         />
                       </CardContent>
                     </Card>
@@ -174,9 +158,10 @@ const ResponsesPage = () => {
                           {`${question.question}`}
                         </CardHeader>
                         <CardContent>
-                          {false && <pre className="text-sm">{JSON.stringify(responseTally[`survey_responses.${question.id}`], null, 2)}</pre>}
+                          {false && <pre className="text-sm">{JSON.stringify(tallyData[`survey_responses.${question.id}`], null, 2)}</pre>}
                           <ResponseChart
-                            rawData={responseTally[`survey_responses.${question.id}`]}
+                            rawData={tallyData[`survey_responses.${question.id}`]}
+                            type="survresponses"
                           />
                         </CardContent>
                       </Card>
