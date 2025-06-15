@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 import HomePage from '@/pages/HomePage';
 import SurveyPage from '@/pages/SurveyPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+import PiePage from './pages/testinghehehee/piepage';
 
 //protected pages
 import AdminLayout from './pages/protected/AdminLayout';
@@ -16,6 +17,7 @@ const AppRouter = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/survey/:id" element={<SurveyPage />}/>
+        <Route path="/pie" element={<PiePage />}/>
         
         <Route path="/login" element={<LoginPage />}/>
         <Route path="/admin" element={<AdminLayout/>}>
