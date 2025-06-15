@@ -3,13 +3,12 @@ import { useParams } from "react-router";
 import axios, { AxiosResponse } from "axios";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
 import Survey from "@/types/survey_format";
 
 import nut_survey from "@/data/nutrition_survey.json";
-import sample_tally from "@/data/sample_responsetally.json";
 import ResponseChart from "@/components/responsechart";
 
 const ResponsesPage = () => {
@@ -20,13 +19,9 @@ const ResponsesPage = () => {
 
   const [survey, setSurvey] = React.useState<Survey|null>(null);
 
-  //* any na lang to tinatamad na ako
-  const [responseTally, setResponseTally] = React.useState<any>();
-
   React.useEffect(() => {
     if (params.id === '230724') {
       setSurvey(nut_survey);
-      setResponseTally(sample_tally);
       setIdIsValid(true);
     }
     setViewIsLoading(false);
@@ -86,14 +81,16 @@ const ResponsesPage = () => {
     }
   }
 
-  const cardClasses = "w-[100%] md:w-lg mt-2";
+  //classes
+  const cardClasses = "w-[100%] md:w-lg";
 
   return(
     <>
     {idIsValid ? (
       <div className="flex flex-col justify-center h-full w-screen">
-        <h1 className="text-left w-[100%] text-xl ps-5 pt-5">Viewing responses for <span className="font-bold">Nutrition Survey</span></h1>
-        <div className="p-5 gap-4">
+        
+        <div className="flex flex-col p-5 gap-2">
+          <h1 className="text-2xl mb-4">Viewing responses for <span className="font-bold">Nutrition Survey</span></h1>
           {!tallyShown ? (
             <>
               <Card className="w-md">
@@ -101,7 +98,7 @@ const ResponsesPage = () => {
                   {"Note from admin: PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
                 </CardContent>
                 <CardFooter>
-                  <Button className="" onClick={handleFormRet}>Display form responses</Button>
+                  <Button className="w-full" variant="outline" onClick={handleFormRet}>Display form responses</Button>
                 </CardFooter>
               </Card>
             </>
@@ -137,10 +134,17 @@ const ResponsesPage = () => {
                   }
 
                   {/* //!THESE CARDS WILL SHOW THE RESPONSES */}
+                  <Card className={cardClasses}>
+                    <CardContent>
+                      <p>{"Total responses: "}<span className="font-bold">{tallyData["total_responses"]}</span></p>
+                    </CardContent>
+                  </Card>
                   {survey && survey.details_field.fields.map((field)=>(
                     <Card className={cardClasses} key={field.id}>
                       <CardHeader>
-                        {`${field.title}`}
+                        <CardTitle>
+                          {`${field.title}`}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         {false && <pre className="text-sm">{JSON.stringify(tallyData[`details_field.${field.id}`], null, 2)}</pre>}
@@ -155,7 +159,9 @@ const ResponsesPage = () => {
                     page.questions.map((question)=>(
                       <Card className={cardClasses} key={question.id}>
                         <CardHeader>
-                          {`${question.question}`}
+                          <CardTitle>
+                            {`${question.question}`}
+                          </CardTitle>
                         </CardHeader>
                         <CardContent>
                           {false && <pre className="text-sm">{JSON.stringify(tallyData[`survey_responses.${question.id}`], null, 2)}</pre>}

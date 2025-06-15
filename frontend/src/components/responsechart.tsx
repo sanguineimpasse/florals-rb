@@ -79,7 +79,7 @@ const ResponseChart = ({
   }, []);
 
   return(
-    <div className="w-full h-64">
+    <div className="w-full h-100">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           {chartData &&

@@ -1,13 +1,29 @@
+import React from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NavLink } from "react-router";
 
-const DashboardPage = () => {
+import Survey from "@/types/survey_format";
 
+import survey_imported from "@/data/nutrition_survey.json";
+
+
+type RetSurveysType = {
+  [key: string] : Survey;
+}
+
+const DashboardPage = () => {
+  const [retrievedSurveys, setRetrievedSurveys] = React.useState<RetSurveysType>({});
+
+  React.useEffect(() => {
+    setRetrievedSurveys(prevState => ({...prevState, "230724": survey_imported}));
+  }, []);
 
   const handleNewMessage = () => {
     window.alert("Not Implemented yet hehe")
   };
+
   return(
     <div className="flex flex-col md:flex-row items-center md:items-start justify-center h-full w-full p-4 gap-2">
       {/* col1 */}
@@ -23,17 +39,29 @@ const DashboardPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-4 ps-4">
-                <h1 className="font-bold text-2xl">Nutrition Survey</h1>
-                <p className="text-xs text-primary">
-                  {"Based on the definitions of physical activity and exercise as you take this questionnaire, keep in mind that you can be physically active without exercising, but you cannot exercise without being physically active."}
-                </p>
-                <Button className="p-0">
-                  <NavLink className="w-[100%] h-[100%] p-2" to="/admin/responses/230724">
-                    View Responses
-                  </NavLink>
-                </Button>
-              </div>
+              {retrievedSurveys["230724"] && 
+                <div className="flex flex-col gap-4 p-8 outline rounded-2xl hover:outline-2 hover:outline-ring">
+                  <h1 className="font-bold text-2xl">
+                    {retrievedSurveys["230724"].title}
+                  </h1>
+                  <p className="text-xs text-primary">
+                    {retrievedSurveys["230724"].desc}
+                  </p>
+                  <div className="flex flex-row gap-2 w-full">
+                    <Button className="p-0 w-[50%]">
+                      <NavLink className="w-full h-full p-2" to="/admin/responses/230724">
+                        View Responses
+                      </NavLink>
+                    </Button>
+                    <Button className="p-0 w-[50%]" variant="outline" >
+                      <NavLink className="w-full h-full p-2" to="/survey/230724">
+                        View Survey
+                      </NavLink>
+                    </Button>
+                  </div>
+                </div>
+              }
+
             </CardContent>
           </Card>
         </div>

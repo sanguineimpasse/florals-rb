@@ -36,7 +36,7 @@ const TopNav = () => {
     <NavLink to="/admin">
       <div className='flex flex-row justify-center items-center w-full h-16 bg-secondary p-2'>
         <img className='w-[40px] m-2' src={icon} alt="Florals icon" />
-        <h1>{"Florals"}</h1>
+        <h1 className="w-[200px] font-bold">{"Florals "}<span className="font-normal">{"Admin"}</span></h1>
         <div className="w-full"></div>
         <Button className='' onClick={handleLogout}>
           {"Logout"}
