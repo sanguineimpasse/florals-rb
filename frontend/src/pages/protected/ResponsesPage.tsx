@@ -286,32 +286,46 @@ function handleNutritionRet() {
       type="survresponses"
     />
     {(() => {
-      const data = nutritionData[`survey_responses.${question.id}`] as Record<string, number>;
-      const entries = Object.entries(data);
-      const total = entries.reduce((sum, [, count]) => sum + count, 0);
+const data = nutritionData[`survey_responses.${question.id}`];
 
-      const often = data["Often"] || 0;
-      const sometimes = data["Sometimes"] || 0;
-      const never = data["Never"] || 0;
+// Corrected mapping
+const always = data[4] || 0;
+const often = data[3] || 0;
+const seldom = data[2] || 0;
+const never = data[1] || 0;
 
-const oftenRate = (often / total) * 100;
-const sometimesRate = (sometimes / total) * 100;
-const neverRate = (never / total) * 100;
+const total = always + often + seldom + never;
 
 let interpretation = "";
 
-if (oftenRate >= 70) {
-  interpretation = "This habit is well-established among most participants, indicating a strong dietary discipline in this area.";
-} else if (oftenRate >= 50 && sometimesRate >= 30) {
-  interpretation = "A good number of participants practice this habit regularly, but there's room for improvement.";
-} else if (sometimesRate > 50) {
-  interpretation = "This habit is inconsistently followed, suggesting awareness but lack of consistency.";
-} else if (neverRate >= 50) {
-  interpretation = "This dietary habit is largely neglected by respondents, highlighting a possible target for health intervention.";
-} else if (neverRate > 30 && oftenRate < 40) {
-  interpretation = "Low adoption of this habit may indicate barriers or low awareness among participants.";
+if (total === 0) {
+  interpretation = "No responses available.";
 } else {
-  interpretation = "Responses vary significantly, suggesting diverse practices or uncertainty about this dietary behavior.";
+  const alwaysRate = (always / total) * 100;
+  const oftenRate = (often / total) * 100;
+  const seldomRate = (seldom / total) * 100;
+  const neverRate = (never / total) * 100;
+
+  console.log("→ Corrected Rates:", {
+    Always: alwaysRate,
+    Often: oftenRate,
+    Seldom: seldomRate,
+    Never: neverRate
+  });
+
+  if (oftenRate >= 50 && seldomRate >= 30 && neverRate >= 10 && alwaysRate >= 20) {
+    interpretation = "Mixed habit: strong practice with signs of inconsistency and neglect.";
+  } else if (alwaysRate >= oftenRate && alwaysRate >= seldomRate && alwaysRate >= neverRate) {
+    interpretation = `Most participants always follow this habit (${alwaysRate.toFixed(1)}%).`;
+  } else if (oftenRate >= seldomRate && oftenRate >= neverRate && oftenRate >= alwaysRate) {
+    interpretation = `Most participants often follow this habit (${oftenRate.toFixed(1)}%).`;
+  } else if (seldomRate >= oftenRate && seldomRate >= neverRate && seldomRate >= alwaysRate) {
+    interpretation = `Most participants only seldom follow this habit (${seldomRate.toFixed(1)}%).`;
+  } else if (neverRate >= oftenRate && neverRate >= seldomRate && neverRate >= alwaysRate) {
+    interpretation = `Most participants never follow this habit (${neverRate.toFixed(1)}%).`;
+  } else {
+    interpretation = "Responses are mixed with no clear majority.";
+  }
 }
 
       return (
