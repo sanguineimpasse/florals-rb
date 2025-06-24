@@ -34,6 +34,47 @@ const ResponsesPage = () => {
   const [retrievalError, setRetrievalError] = React.useState<any>();
   const [tallyData, setTallyData] = React.useState<any>();
 
+  const [nutritionShown, setNutritionShown] = React.useState(false);
+  const [nutritionLoading, setNutritionLoading] = React.useState(false);
+  const [nutritionData, setNutritionData] = React.useState<any>();
+  const [nutritionError, setNutritionError] = React.useState<any>();
+  const [nutritionFailed, setNutritionFailed] = React.useState(false);
+
+function handleNutritionRet() {
+  setNutritionShown(true);
+  setNutritionLoading(true);
+  setNutritionFailed(false);
+  setNutritionError(null);
+
+  let apiAddress = `/api/data/get-nutrition-responses`;
+  if (import.meta.env.DEV) {
+    apiAddress = 'http://localhost:4000/api/data/get-nutrition-responses';
+  }
+
+  axios
+    .get(apiAddress, { withCredentials: true })
+    .then((response: AxiosResponse<any>) => {
+      if (import.meta.env.DEV) {
+        console.log("Nutrition response:", response);
+      }
+      setNutritionData(response.data);
+    })
+    .catch((error: unknown) => {
+      setNutritionFailed(true);
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error);
+        setNutritionError("Axios error: " + error.message);
+      } else {
+        console.error("Unexpected error:", error);
+        setNutritionError("Unexpected error: " + error);
+      }
+    })
+    .finally(() => {
+      setNutritionLoading(false);
+    });
+}
+
+
   const [debugShowData, setDebugShowData] = React.useState(false);
 
   function handleFormRet(){
@@ -91,25 +132,33 @@ const ResponsesPage = () => {
         
         <div className="flex flex-col p-5 gap-2">
           <h1 className="text-2xl mb-4">Viewing responses for <span className="font-bold">Nutrition Survey</span></h1>
-          {!tallyShown ? (
-            <>
-              <Card className="w-md">
-                <CardContent>
-                  {"Note from admin: PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline" onClick={handleFormRet}>Display form responses</Button>
-                </CardFooter>
-              </Card>
-            </>
-          ):(
-            tallyLoading ? (
+{!tallyShown && !nutritionShown ? (
+  <>
+ <Card className="w-md">
+      <CardContent>
+        {"Note from admin: PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
+      </CardContent>
+      <CardFooter>
+        <Button className="w-full" variant="outline" onClick={handleFormRet}>
+          Display form responses
+        </Button>
+      </CardFooter>
+    </Card>
+ <Card className="w-md">
+      <CardContent>
+        {"Note: This will load ONLY the Nutrition & Diet section, useful if you want to save on DB bandwidth."}
+      </CardContent>
+      <CardFooter>
+        <Button className="w-full" variant="outline" onClick={handleNutritionRet}>
+          Display only Nutrition responses
+        </Button>
+      </CardFooter>
+    </Card>
+  </>
+):(tallyLoading ? (
               <>
-                <h1 className="mb-3">Loading the tally...</h1>
-                <Spinner className="w-10 h-10"/>
               </>
-            ):(
-              retrievalFailed ? (
+            ):(retrievalFailed ? (
                 <Card>
                   <CardContent>
                     <h1 className="text-destructive">Retrieval Error</h1>
@@ -148,10 +197,12 @@ const ResponsesPage = () => {
                       </CardHeader>
                       <CardContent>
                         {false && <pre className="text-sm">{JSON.stringify(tallyData[`details_field.${field.id}`], null, 2)}</pre>}
-                        <ResponseChart
-                          rawData={tallyData[`details_field.${field.id}`]}
-                          type="detfield"
-                        />
+                    {tallyData[`details_field.${field.id}`] && (
+                      <ResponseChart
+                        rawData={tallyData[`details_field.${field.id}`]}
+                        type="detfield"
+                      />
+                  )}
                       </CardContent>
                     </Card>
                   ))}
@@ -165,17 +216,117 @@ const ResponsesPage = () => {
                         </CardHeader>
                         <CardContent>
                           {false && <pre className="text-sm">{JSON.stringify(tallyData[`survey_responses.${question.id}`], null, 2)}</pre>}
-                          <ResponseChart
-                            rawData={tallyData[`survey_responses.${question.id}`]}
-                            type="survresponses"
-                          />
+{tallyData[`survey_responses.${question.id}`] && (
+  <>
+    <ResponseChart
+      rawData={tallyData[`survey_responses.${question.id}`]}
+      type="survresponses"
+    />
+    {(() => {
+      const data = tallyData[`survey_responses.${question.id}`] as Record<string, number>;
+      const entries = Object.entries(data);
+      const total = entries.reduce((acc, [, count]) => acc + count, 0);
+      const sorted = [...entries].sort((a, b) => b[1] - a[1]);
+
+      if (sorted.length === 0) return null;
+
+      const [topAnswer, topCount] = sorted[0];
+      const percentage = ((topCount / total) * 100).toFixed(1);
+
+      return (
+        <p className="mt-2 text-sm text-muted-foreground">
+          {`Top answer: "${topAnswer}" with ${percentage}% (${topCount} out of ${total})`}
+        </p>
+      );
+    })()}
+  </>
+)}
                         </CardContent>
                       </Card>
                     ))
                   ))}
-                  
                 </>
               )
+            )
+          )}
+
+          {/* 👉 Nutrition Only Section Display */}
+{nutritionShown && (nutritionLoading ? (
+  <>
+    <h1 className="mb-3">Loading the nutrition responses...</h1>
+    <Spinner className="w-10 h-10" />
+  </>
+) : nutritionFailed ? (
+              <Card className="w-md mt-4">
+                <CardContent>
+                  <h1 className="text-destructive">Nutrition Retrieval Error</h1>
+                  <p className="text-destructive">{nutritionError}</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card className={cardClasses}>
+                  <CardContent>
+                    <p>{"Total responses: "}<span className="font-bold">{nutritionData["total_responses"]}</span></p>
+                  </CardContent>
+                </Card>
+
+                {survey && survey.pages.find(page => page.title.includes("Nutrition"))?.questions.map((question) => (
+                  <Card className={cardClasses} key={`nutrition-${question.id}`}>
+                    <CardHeader>
+                      <CardTitle>
+                        {`${question.question}`}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+{nutritionData[`survey_responses.${question.id}`] && (
+  <>
+    <ResponseChart
+      rawData={nutritionData[`survey_responses.${question.id}`]}
+      type="survresponses"
+    />
+    {(() => {
+      const data = nutritionData[`survey_responses.${question.id}`] as Record<string, number>;
+      const entries = Object.entries(data);
+      const total = entries.reduce((sum, [, count]) => sum + count, 0);
+
+      const often = data["Often"] || 0;
+      const sometimes = data["Sometimes"] || 0;
+      const never = data["Never"] || 0;
+
+const oftenRate = (often / total) * 100;
+const sometimesRate = (sometimes / total) * 100;
+const neverRate = (never / total) * 100;
+
+let interpretation = "";
+
+if (oftenRate >= 70) {
+  interpretation = "This habit is well-established among most participants, indicating a strong dietary discipline in this area.";
+} else if (oftenRate >= 50 && sometimesRate >= 30) {
+  interpretation = "A good number of participants practice this habit regularly, but there's room for improvement.";
+} else if (sometimesRate > 50) {
+  interpretation = "This habit is inconsistently followed, suggesting awareness but lack of consistency.";
+} else if (neverRate >= 50) {
+  interpretation = "This dietary habit is largely neglected by respondents, highlighting a possible target for health intervention.";
+} else if (neverRate > 30 && oftenRate < 40) {
+  interpretation = "Low adoption of this habit may indicate barriers or low awareness among participants.";
+} else {
+  interpretation = "Responses vary significantly, suggesting diverse practices or uncertainty about this dietary behavior.";
+}
+
+      return (
+        <p className="mt-2 text-sm text-muted-foreground italic">
+          {interpretation}
+        </p>
+      );
+    })()}
+  </>
+)}
+
+                    </CardContent>
+                  </Card>
+                ))}
+              </>
             )
           )}
         </div>
