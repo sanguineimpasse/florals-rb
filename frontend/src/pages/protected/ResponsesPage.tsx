@@ -1,11 +1,12 @@
 import React from "react";
 import { useParams } from "react-router";
 import axios, { AxiosResponse } from "axios";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-
+import ClusterScatterChart from "@/components/ClusterChart";
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Legend, Tooltip } from 'chart.js';
+ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip);
 import Survey from "@/types/survey_format";
 
 import nut_survey from "@/data/nutrition_survey.json";
@@ -39,6 +40,133 @@ const ResponsesPage = () => {
   const [nutritionData, setNutritionData] = React.useState<any>();
   const [nutritionError, setNutritionError] = React.useState<any>();
   const [nutritionFailed, setNutritionFailed] = React.useState(false);
+
+  const [rawShown, setRawShown] = React.useState(false);
+  const [rawData, setRawData] = React.useState<any[]>([]);
+const [clusterLoading, setClusterLoading] = React.useState(false);
+
+
+const convertTo2D = (clusteredData: any[]) => {
+  return clusteredData.map(({ data }) => {
+    const values = Object.values(data).map(Number);
+    const x = values.slice(0, 10).reduce((a, b) => a + b, 0) / 10; // Physical
+    const y = values.slice(10).reduce((a, b) => a + b, 0) / 10;    // Nutrition
+    const answerAvg = (x + y) / 2;
+    return { x, y, answerAvg };
+  });
+};
+
+
+
+function handleRawDataRet() {
+  setClusterLoading(true);
+  setRawShown(true);
+  setTallyShown(false);
+  setNutritionShown(false);
+    setTallyShown(false);       // hide first card
+  setNutritionShown(false);   // hide second card
+
+  let apiAddress = `/api/data/get-raw-answers`;
+  if (import.meta.env.DEV) {
+    apiAddress = 'http://localhost:4000/api/data/get-raw-answers';
+  }
+
+  axios
+    .get(apiAddress, { withCredentials: true })
+    .then((response: AxiosResponse<any[]>) => {
+      const cleaned = response.data.filter(d => Object.values(d).every(v => typeof v === 'number'));
+      const vectors: number[][] = cleaned.map(obj => Object.values(obj).map(v => Number(v)));
+
+      const { assignments } = kMeans(vectors, 3);
+
+      const clusteredData = cleaned.map((entry, i) => ({
+        cluster: assignments[i],
+        data: entry,
+      }));
+
+      const evaluatedClusters = clusteredData.map(({ cluster, data }) => {
+        const values = Object.values(data).map(Number);
+        const physAvg = values.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
+        const nutAvg = values.slice(10).reduce((a, b) => a + b, 0) / 10;
+
+        let behaviorProfile = "";
+        if (physAvg >= 3.2 && nutAvg >= 3.2) {
+          behaviorProfile = "High Physical & High Nutrition";
+        } else if (physAvg >= 3.2 && nutAvg < 3.2) {
+          behaviorProfile = "High Physical, Low Nutrition";
+        } else if (physAvg < 3.2 && nutAvg >= 3.2) {
+          behaviorProfile = "Low Physical, High Nutrition";
+        } else {
+          behaviorProfile = "Low Physical & Low Nutrition";
+        }
+
+        return {
+          cluster,
+          data,
+          physAvg,
+          nutAvg,
+          behaviorProfile
+        };
+      });
+
+      setRawData(evaluatedClusters);
+    })
+    .catch((error: unknown) => {
+      console.error("Error retrieving raw data:", error);
+    })
+    .finally(() => {
+      setClusterLoading(false); // ⏳ Stop loading
+    });
+}
+function kMeans(data: number[][], k: number, maxIterations = 100) {
+  const centroids = data.slice(0, k).map(vec => [...vec]); // initial centroids
+
+  let assignments: number[] = [];
+
+  for (let iter = 0; iter < maxIterations; iter++) {
+    // Assign clusters
+    assignments = data.map(point => {
+      let best = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < centroids.length; i++) {
+        const dist = euclideanDistance(point, centroids[i]);
+        if (dist < bestDist) {
+          best = i;
+          bestDist = dist;
+        }
+      }
+      return best;
+    });
+
+    // Recompute centroids
+    const newCentroids = Array.from({ length: k }, () => Array(data[0].length).fill(0));
+    const counts = Array(k).fill(0);
+
+    data.forEach((point, i) => {
+      const cluster = assignments[i];
+      counts[cluster]++;
+      for (let j = 0; j < point.length; j++) {
+        newCentroids[cluster][j] += point[j];
+      }
+    });
+
+    for (let i = 0; i < k; i++) {
+      if (counts[i] === 0) continue;
+      for (let j = 0; j < data[0].length; j++) {
+        newCentroids[i][j] /= counts[i];
+      }
+    }
+
+    centroids.splice(0, centroids.length, ...newCentroids);
+  }
+
+  return { assignments, centroids };
+}
+
+function euclideanDistance(a: number[], b: number[]) {
+  return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
+}
+
 
 function handleNutritionRet() {
   setNutritionShown(true);
@@ -132,7 +260,7 @@ function handleNutritionRet() {
         
         <div className="flex flex-col p-5 gap-2">
           <h1 className="text-2xl mb-4">Viewing responses for <span className="font-bold">Nutrition Survey</span></h1>
-{!tallyShown && !nutritionShown ? (
+{!tallyShown && !nutritionShown && !rawShown ?(
   <>
  <Card className="w-md">
       <CardContent>
@@ -154,6 +282,17 @@ function handleNutritionRet() {
         </Button>
       </CardFooter>
     </Card>
+<Card className="w-md">
+  <CardContent>
+    {"Perform cluster analysis to identify groups of respondents with similar health and nutrition habits. This helps visualize behavioral patterns across participants."}
+  </CardContent>
+  <CardFooter>
+    <Button className="w-full" variant="outline" onClick={handleRawDataRet}>
+      Run Cluster Analysis
+    </Button>
+  </CardFooter>
+</Card>
+
   </>
 ):(tallyLoading ? (
               <>
@@ -251,6 +390,25 @@ function handleNutritionRet() {
           )}
 
           {/* 👉 Nutrition Only Section Display */}
+         {rawShown && (
+  <>
+    {clusterLoading ? (
+      <div className="flex flex-col items-center justify-center mt-5">
+        <Spinner className="w-10 h-10 mb-2" />
+        <p className="text-sm text-muted-foreground">Analyzing clusters...</p>
+      </div>
+    ) : (
+      <Card className="w-md">
+        <CardHeader>
+          <CardTitle>Cluster Distribution (2D)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ClusterScatterChart data={convertTo2D(rawData)} />
+        </CardContent>
+      </Card>
+    )}
+  </>
+)}
 {nutritionShown && (nutritionLoading ? (
   <>
     <h1 className="mb-3">Loading the nutrition responses...</h1>
