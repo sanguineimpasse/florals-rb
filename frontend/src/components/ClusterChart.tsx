@@ -10,6 +10,7 @@ import {
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend);
 
 // Group colors
+
 const groupColors: Record<string, string> = {
   'High Physical - High Nutrition': '#34d399',
   'High Physical - Low Nutrition': '#60a5fa',
@@ -51,36 +52,52 @@ const ClusterScatterChart = ({
     pointRadius: 6,
   }));
 
-  return (
-    <Scatter
-      data={{ datasets }}
-      options={{
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const raw = ctx.raw as { x: number; y: number };
-                return `x: ${raw.x.toFixed(2)}, y: ${raw.y.toFixed(2)}`;
+ return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <Scatter
+        data={{ datasets }}
+        options={{
+          maintainAspectRatio: false,
+          responsive: true,
+          layout: {
+            padding: 20,
+          },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const raw = ctx.raw as { x: number; y: number };
+                  return `x: ${raw.x.toFixed(2)}, y: ${raw.y.toFixed(2)}`;
+                },
               },
             },
           },
-        },
-        scales: {
-          x: {
-            title: { display: true, text: 'Physical Score Avg' },
-            min: 1,
-            max: 4,
+          scales: {
+            x: {
+              title: { display: true, text: 'Physical Score Avg' },
+              min: 1,
+              max: 4,
+              ticks: {
+                stepSize: 1,
+                precision: 0,
+              },
+            },
+            y: {
+              title: { display: true, text: 'Nutrition Score Avg' },
+              min: 1,
+              max: 4,
+              ticks: {
+                stepSize: 1,
+                precision: 0,
+              },
+            },
           },
-          y: {
-            title: { display: true, text: 'Nutrition Score Avg' },
-            min: 1,
-            max: 4,
-          },
-        },
-      }}
-    />
+        }}
+      />
+    </div>
   );
 };
+
 
 export default ClusterScatterChart;
