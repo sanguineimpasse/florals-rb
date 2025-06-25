@@ -1,0 +1,86 @@
+import { Scatter } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(LinearScale, PointElement, Tooltip, Legend);
+
+// Group colors
+const groupColors: Record<string, string> = {
+  'High Physical - High Nutrition': '#34d399',
+  'High Physical - Low Nutrition': '#60a5fa',
+  'Low Physical - High Nutrition': '#facc15',
+  'Low Physical - Low Nutrition': '#f87171',
+};
+
+const getGroup = (x: number, y: number): string => {
+  const highX = x >= 3;
+  const highY = y >= 3;
+
+  if (highX && highY) return 'High Physical - High Nutrition';
+  if (highX && !highY) return 'High Physical - Low Nutrition';
+  if (!highX && highY) return 'Low Physical - High Nutrition';
+  return 'Low Physical - Low Nutrition';
+};
+
+const ClusterScatterChart = ({
+  data,
+}: {
+  data: { x: number; y: number }[];
+}) => {
+  // Group the data
+  const groupedData: Record<string, { x: number; y: number }[]> = {};
+
+  data.forEach((point) => {
+    const group = getGroup(point.x, point.y);
+    if (!groupedData[group]) {
+      groupedData[group] = [];
+    }
+    groupedData[group].push(point);
+  });
+
+  // Create datasets for each group
+  const datasets = Object.entries(groupedData).map(([group, points]) => ({
+    label: group,
+    data: points,
+    backgroundColor: groupColors[group],
+    pointRadius: 6,
+  }));
+
+  return (
+    <Scatter
+      data={{ datasets }}
+      options={{
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const raw = ctx.raw as { x: number; y: number };
+                return `x: ${raw.x.toFixed(2)}, y: ${raw.y.toFixed(2)}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Physical Score Avg' },
+            min: 1,
+            max: 4,
+          },
+          y: {
+            title: { display: true, text: 'Nutrition Score Avg' },
+            min: 1,
+            max: 4,
+          },
+        },
+      }}
+    />
+  );
+};
+
+export default ClusterScatterChart;
