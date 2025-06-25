@@ -398,11 +398,11 @@ function handleNutritionRet() {
         <p className="text-sm text-muted-foreground">Analyzing clusters...</p>
       </div>
     ) : (
-      <Card className="w-md">
+      <Card className="w-[900px] h-[700px]">
         <CardHeader>
           <CardTitle>Cluster Distribution (2D)</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="h-full p-0">
           <ClusterScatterChart data={convertTo2D(rawData)} />
         </CardContent>
       </Card>
