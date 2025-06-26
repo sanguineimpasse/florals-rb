@@ -11,10 +11,12 @@ import {
 
 function getCorrelationText(value: number) {
   const abs = Math.abs(value);
-  if (abs >= 0.75) return "High";
-  if (abs >= 0.5) return "Moderate";
-  if (abs >= 0.3) return "Low";
-  return "None";
+  const direction = value < 0 ? "Negative" : "Positive";
+
+  if (abs >= 0.75) return `High ${direction}`;
+  if (abs >= 0.5) return `Moderate ${direction}`;
+  if (abs >= 0.3) return `Low ${direction}`;
+  return "No Correlation";
 }
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);

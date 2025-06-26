@@ -329,7 +329,7 @@ function handleNutritionRet() {
         
         <div className="flex flex-col p-5 gap-2">
           <h1 className="text-2xl mb-4">Viewing responses for <span className="font-bold">Nutrition Survey</span></h1>
-{!tallyShown && !nutritionShown && !rawShown ?(
+{!tallyShown && !nutritionShown && !rawShown && !correlationShown ?(
   <>
  <Card className="w-md">
       <CardContent>
