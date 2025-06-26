@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import ClusterScatterChart from "@/components/ClusterChart";
+import CorrelationChart from "@/components/CorrelationChart";
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Legend, Tooltip } from 'chart.js';
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip);
 import Survey from "@/types/survey_format";
@@ -45,6 +46,10 @@ const ResponsesPage = () => {
   const [rawData, setRawData] = React.useState<any[]>([]);
 const [clusterLoading, setClusterLoading] = React.useState(false);
 
+const [correlationData, setCorrelationData] = React.useState<any[]>([]);
+const [correlationLoading, setCorrelationLoading] = React.useState(false);
+const [correlationShown, setCorrelationShown] = React.useState(false);
+
 
 const convertTo2D = (clusteredData: any[]) => {
   return clusteredData.map(({ data }) => {
@@ -56,6 +61,70 @@ const convertTo2D = (clusteredData: any[]) => {
   });
 };
 
+function handleCorrelationAnalysis() {
+  setCorrelationLoading(true);
+  setCorrelationShown(true);
+  setTallyShown(false);
+  setNutritionShown(false);
+  setRawShown(false);
+  
+
+  console.log("Starting correlation fetch...");
+
+  let apiAddress = '/api/data/get-raw-answers';
+  if (import.meta.env.DEV) {
+    apiAddress = 'http://localhost:4000/api/data/get-raw-answers';
+  }
+
+  axios.get(apiAddress, { withCredentials: true })
+    .then((response: AxiosResponse<any[]>) => {
+      console.log("Raw data received:", response.data); // ✅ Check if data is coming
+      const cleaned = response.data.filter(d =>
+        Object.values(d).every(v => typeof v === 'number' && Number.isFinite(v))
+      );
+
+      console.log("Cleaned data:", cleaned);
+
+     const correlations = cleaned.map((entry, index) => {
+  const values = Object.values(entry).map(Number);
+  const phys = values.slice(0, 10);       // first 10 questions = physical
+  const nut = values.slice(10, 20);       // next 10 questions = nutrition
+  const value = computePearsonCorrelation(phys, nut);
+  return {
+    respondent: `Respondent #${index + 1}`,
+    value
+  };
+});
+
+setCorrelationData(correlations);
+    })
+    .catch(err => {
+      console.error("Correlation error:", err);
+    })
+    .finally(() => {
+      setCorrelationLoading(false);
+      console.log("Finished correlation analysis");
+    });
+}
+
+
+function computePearsonCorrelation(x: number[], y: number[]): number {
+  const n = x.length;
+  const avgX = x.reduce((a, b) => a + b, 0) / n;
+  const avgY = y.reduce((a, b) => a + b, 0) / n;
+
+  let numerator = 0, denomX = 0, denomY = 0;
+
+  for (let i = 0; i < n; i++) {
+    const dx = x[i] - avgX;
+    const dy = y[i] - avgY;
+    numerator += dx * dy;
+    denomX += dx * dx;
+    denomY += dy * dy;
+  }
+
+  return numerator / Math.sqrt(denomX * denomY);
+}
 
 
 function handleRawDataRet() {
@@ -284,6 +353,16 @@ function handleNutritionRet() {
     </Card>
 <Card className="w-md">
   <CardContent>
+    Analyze correlation between physical activity and nutrition habits across all questions.
+  </CardContent>
+  <CardFooter>
+    <Button className="w-full" variant="outline" onClick={handleCorrelationAnalysis}>
+      Run Correlation Analysis
+    </Button>
+  </CardFooter>
+</Card>
+<Card className="w-md">
+  <CardContent>
     {"Perform cluster analysis to identify groups of respondents with similar health and nutrition habits. This helps visualize behavioral patterns across participants."}
   </CardContent>
   <CardFooter>
@@ -390,6 +469,23 @@ function handleNutritionRet() {
           )}
 
           {/* 👉 Nutrition Only Section Display */}
+             {correlationShown && (
+  <Card className="w-[900px] h-[600px]">
+    <CardHeader>
+      <CardTitle>Correlation Results</CardTitle>
+    </CardHeader>
+    <CardContent className="h-full">
+      {correlationLoading ? (
+        <div className="flex flex-col items-center justify-center mt-4">
+          <Spinner className="w-10 h-10 mb-2" />
+          <p className="text-muted-foreground text-sm">Analyzing correlation...</p>
+        </div>
+      ) : (
+        <CorrelationChart data={correlationData} />
+      )}
+    </CardContent>
+  </Card>
+)}
          {rawShown && (
   <>
     {clusterLoading ? (
@@ -503,6 +599,7 @@ if (total === 0) {
           )}
         </div>
       </div>
+      
     ) :(
       viewIsLoading ? (
         <></>
