@@ -43,57 +43,59 @@ const ClusterScatterChart = ({
     }
     groupedData[group].push(point);
   });
-
-  // Create datasets for each group
-  const datasets = Object.entries(groupedData).map(([group, points]) => ({
-    label: group,
-    data: points,
-    backgroundColor: groupColors[group],
-    pointRadius: 6,
-  }));
+const datasets = Object.entries(groupedData).map(([group, points]) => ({
+  label: `${group} (${points.length})`,
+  data: points,
+  backgroundColor: groupColors[group],
+  pointRadius: 6,
+}));
 
  return (
     <div style={{ width: '100%', height: '100%' }}>
       <Scatter
         data={{ datasets }}
-        options={{
-          maintainAspectRatio: false,
-          responsive: true,
-          layout: {
-            padding: 20,
-          },
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const raw = ctx.raw as { x: number; y: number };
-                  return `x: ${raw.x.toFixed(2)}, y: ${raw.y.toFixed(2)}`;
-                },
-              },
-            },
-          },
-          scales: {
-            x: {
-              title: { display: true, text: 'Physical Score Avg' },
-              min: 1,
-              max: 4,
-              ticks: {
-                stepSize: 1,
-                precision: 0,
-              },
-            },
-            y: {
-              title: { display: true, text: 'Nutrition Score Avg' },
-              min: 1,
-              max: 4,
-              ticks: {
-                stepSize: 1,
-                precision: 0,
-              },
-            },
-          },
-        }}
+options={{
+  maintainAspectRatio: false,
+  responsive: true,
+  layout: {
+    padding: 20,
+  },
+  plugins: {
+    tooltip: {
+      callbacks: {
+        label: (ctx) => {
+          const raw = ctx.raw as { x: number; y: number };
+          const groupLabel = ctx.dataset.label;
+          return [
+            `Group: ${groupLabel}`,
+            `x: ${raw.x.toFixed(2)}, y: ${raw.y.toFixed(2)}`
+          ];
+        },
+      },
+    },
+    legend: { position: 'top' },
+  },
+  scales: {
+    x: {
+      title: { display: true, text: 'Physical Score Avg' },
+      min: 1,
+      max: 4,
+      ticks: {
+        stepSize: 1,
+        precision: 0,
+      },
+    },
+    y: {
+      title: { display: true, text: 'Nutrition Score Avg' },
+      min: 1,
+      max: 4,
+      ticks: {
+        stepSize: 1,
+        precision: 0,
+      },
+    },
+  },
+}}
       />
     </div>
   );
