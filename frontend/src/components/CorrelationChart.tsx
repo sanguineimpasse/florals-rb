@@ -43,7 +43,9 @@ const CorrelationChart: React.FC<Props> = ({ data }) => {
       {
         label: "Physical-Nutrition Correlation",
         data: paginated.map((d) => d.value),
-        backgroundColor: "#4C93FF",
+        backgroundColor: paginated.map((d) =>
+  isNaN(d.value) ? "#999999" : d.value < 0 ? "#FF4C4C" : "#4C93FF"
+),
       },
     ],
   };
