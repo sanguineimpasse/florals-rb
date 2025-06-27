@@ -9,16 +9,6 @@ import {
   Legend,
 } from "chart.js";
 
-function getCorrelationText(value: number) {
-  const abs = Math.abs(value);
-  const direction = value < 0 ? "Negative" : "Positive";
-
-  if (abs >= 0.75) return `High ${direction}`;
-  if (abs >= 0.5) return `Moderate ${direction}`;
-  if (abs >= 0.3) return `Low ${direction}`;
-  return "No Correlation";
-}
-
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 interface Props {
@@ -26,6 +16,17 @@ interface Props {
 }
 
 const ITEMS_PER_PAGE = 10;
+
+function getCorrelationText(value: number) {
+  if (isNaN(value)) return "No Correlation";
+  const abs = Math.abs(value);
+  const direction = value < 0 ? "Negative" : "Positive";
+
+  if (abs >= 0.75) return `High ${direction}`;
+  if (abs >= 0.5) return `Moderate ${direction}`;
+  if (abs >= 0.1) return `Low ${direction}`; // now includes r = ±0.1 to ±0.29
+  return "No Correlation";
+}
 
 const CorrelationChart: React.FC<Props> = ({ data }) => {
   const [page, setPage] = React.useState(0);
@@ -47,22 +48,43 @@ const CorrelationChart: React.FC<Props> = ({ data }) => {
     ],
   };
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false as const,
+    scales: {
+      y: {
+        min: -1,
+        max: 1,
+        ticks: {
+          stepSize: 0.2,
+        },
+      },
+    },
+  };
+
   return (
-    <div className="flex flex-col gap-4">
-      <Bar data={chartData} options={{ responsive: true }} />
+    <div className="flex flex-col h-full gap-4">
+      <div className="h-[300px]">
+        <Bar data={chartData} options={chartOptions} />
+      </div>
+
+      {/* No more scrolling here */}
       <div className="grid grid-cols-2 gap-2 px-4 text-sm">
-  {paginated.map((entry, index) => (
-    <div key={index} className="flex justify-between border-b py-1">
-      <span>{entry.respondent}</span>
-      <span className="text-muted-foreground">
-        Correlation: {getCorrelationText(entry.value)} (r = {entry.value.toFixed(2)})
-      </span>
-    </div>
-  ))}
-</div>
-      <div className="flex justify-between items-center px-4">
+        {paginated.map((entry, index) => (
+          <div key={index} className="flex justify-between border-b py-1">
+            <span>{entry.respondent}</span>
+            <span className="text-muted-foreground">
+              Correlation: {getCorrelationText(entry.value)} (r ={" "}
+              {isNaN(entry.value) ? "NaN" : entry.value.toFixed(2)})
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Page buttons */}
+      <div className="flex justify-between items-center px-4 mt-auto">
         <button
-          className="px-2 py-1 border rounded disabled:opacity-50"
+          className="px-3 py-1 border rounded disabled:opacity-50"
           onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
           disabled={page === 0}
         >
@@ -72,7 +94,7 @@ const CorrelationChart: React.FC<Props> = ({ data }) => {
           Page {page + 1} of {totalPages}
         </span>
         <button
-          className="px-2 py-1 border rounded disabled:opacity-50"
+          className="px-3 py-1 border rounded disabled:opacity-50"
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
           disabled={page + 1 >= totalPages}
         >
