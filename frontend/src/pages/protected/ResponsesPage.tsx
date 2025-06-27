@@ -469,12 +469,12 @@ function handleNutritionRet() {
           )}
 
           {/* 👉 Nutrition Only Section Display */}
-             {correlationShown && (
-  <Card className="w-[900px] h-[600px]">
+           {correlationShown && (
+  <Card className="w-[900px] h-[650px]">
     <CardHeader>
       <CardTitle>Correlation Results</CardTitle>
     </CardHeader>
-    <CardContent className="h-full">
+    <CardContent className="h-full flex flex-col">
       {correlationLoading ? (
         <div className="flex flex-col items-center justify-center mt-4">
           <Spinner className="w-10 h-10 mb-2" />
@@ -486,6 +486,7 @@ function handleNutritionRet() {
     </CardContent>
   </Card>
 )}
+
          {rawShown && (
   <>
     {clusterLoading ? (
