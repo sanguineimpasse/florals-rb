@@ -72,7 +72,116 @@ router.get('/get-responses', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: JSON.stringify(error) });
   }
+  
+  router.get('/get-nutrition-responses', async (req, res) => {
+  enableDebug && console.log("attempting to create nutrition responses view");
 
+  const token = req.cookies.token;
+  if (!token) {
+    enableDebug && console.log("token is invalid");
+    return res.status(401).json({ message: "Invalid token" });
+  }
+
+  //verify if token is valid
+  if (!(await isTokenValid(token))) {
+    enableDebug && console.log("token is invalid");
+    return res.status(401).json({ message: "Invalid token" });
+  }
+
+  try {
+    await connectToDatabase(160000);
+    const docs = await SurveyResponse.find().lean();
+    const nutritionTally = {};
+
+    nutritionTally["total_responses"] = docs.length;
+
+    for (const doc of docs) {
+      if (!doc.survey_responses) continue;
+
+      for (const key in doc.survey_responses) {
+        if (key.startsWith('p2_')) {
+          const value = String(doc.survey_responses[key]);
+          const fullKey = `survey_responses.${key}`;
+
+          nutritionTally[fullKey] = nutritionTally[fullKey] || {};
+          nutritionTally[fullKey][value] = (nutritionTally[fullKey][value] || 0) + 1;
+        }
+      }
+    }
+
+    res.status(200).json(nutritionTally);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: JSON.stringify(error) });
+  }
+});});
+
+router.get('/get-nutrition-responses', async (req, res) => {
+  enableDebug && console.log("attempting to create nutrition responses view");
+
+  const token = req.cookies.token;
+  if (!token || !(await isTokenValid(token))) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+
+  try {
+    await connectToDatabase(160000);
+    const docs = await SurveyResponse.find().lean();
+    const nutritionTally = {};
+    nutritionTally["total_responses"] = docs.length;
+
+    for (const doc of docs) {
+      if (!doc.survey_responses) continue;
+      for (const key in doc.survey_responses) {
+        if (key.startsWith('p2_')) {
+          const value = String(doc.survey_responses[key]);
+          const fullKey = `survey_responses.${key}`;
+          nutritionTally[fullKey] = nutritionTally[fullKey] || {};
+          nutritionTally[fullKey][value] = (nutritionTally[fullKey][value] || 0) + 1;
+        }
+      }
+    }
+
+    res.status(200).json(nutritionTally);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: JSON.stringify(error) });
+  }
+});
+
+// ✅ ALSO MOVED OUTSIDE
+router.get('/get-raw-answers', async (req, res) => {
+  enableDebug && console.log("Fetching raw numeric survey answers");
+
+  const token = req.cookies.token;
+  if (!token || !(await isTokenValid(token))) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+
+  try {
+    await connectToDatabase(160000);
+    const docs = await SurveyResponse.find().lean();
+    const rawData = [];
+
+    for (const doc of docs) {
+      const entry = {};
+      const responses = doc.survey_responses;
+      if (!responses) continue;
+
+      for (const [key, value] of Object.entries(responses)) {
+        if (key.startsWith("p1_") || key.startsWith("p2_")) {
+          entry[key] = typeof value === 'number' ? value : parseInt(value);
+        }
+      }
+
+      rawData.push(entry);
+    }
+
+    res.status(200).json(rawData); // ✅ this will now be an array, and .filter() in frontend will work
+  } catch (error) {
+    console.error("Error fetching raw answers:", error);
+    res.status(500).json({ message: JSON.stringify(error) });
+  }
 });
 
 
