@@ -13,6 +13,7 @@ import CorrelationChart from "@/components/CorrelationChart";
 
 import Survey from "@/types/survey_format";
 import nut_survey from "@/data/nutrition_survey.json";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ResponsesPage = () => {
   const params = useParams();
@@ -239,167 +240,208 @@ const ResponsesPage = () => {
           {!retrievalFailed ? (
             <>
               {!tallyShown && !nutritionShown && !rawShown && !correlationShown && (
-                <>
-                  <Card className="w-md">
-                    <CardContent>
-                      {"Note from admin: PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
-                    </CardContent>
-                  </Card>
-                  <Card className="w-md">
-                    <CardContent>
-                      Display all the responses to the survey.
-                    </CardContent>
-                    <CardFooter>
-                      <Button className="w-full" variant="outline" onClick={getTallyData}>
-                        Display form responses
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                  <Card className="w-md">
-                    <CardContent>
-                      Loads only the Nutrition section to save bandwidth.
-                    </CardContent>
-                    <CardFooter>
-                      <Button className="w-full" variant="outline" onClick={handleNutritionRet}>
-                        Display only Nutrition responses
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                  <Card className="w-md">
-                    <CardContent>
-                      Analyze correlation between physical and nutrition data.
-                    </CardContent>
-                    <CardFooter>
-                      <Button className="w-full" variant="outline" onClick={handleCorrelationAnalysis}>
-                        Run Correlation Analysis
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                  <Card className="w-md">
-                    <CardContent>
-                      Perform cluster analysis to identify respondent groups.
-                    </CardContent>
-                    <CardFooter>
-                      <Button className="w-full" variant="outline" onClick={handleRawDataRet}>
-                        Run Cluster Analysis
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </>
-              )}
-
-              {tallyShown && !tallyLoading && tallyData && (
-                <>
-                  <Card className={cardClasses}>
-                    <CardContent>
-                      Total responses: <span className="font-bold">{tallyData["total_responses"]}</span>
-                    </CardContent>
-                  </Card>
-                  {survey && survey.details_field.fields.map((field)=>(
-                    <Card className={cardClasses} key={field.id}>
-                      <CardHeader>
-                        <CardTitle>
-                          {`${field.title}`}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {false && <pre className="text-sm">{JSON.stringify(tallyData[`details_field.${field.id}`], null, 2)}</pre>}
-                        <ResponseChart
-                          rawData={tallyData[`details_field.${field.id}`]}
-                          type="detfield"
-                        />
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {survey && survey.pages.map((page)=>(
-                    page.questions.map((question)=>(
-                      <Card className={cardClasses} key={question.id}>
-                        <CardHeader>
-                          <CardTitle>
-                            {`${question.question}`}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {false && <pre className="text-sm">{JSON.stringify(tallyData[`survey_responses.${question.id}`], null, 2)}</pre>}
-                          <ResponseChart
-                            rawData={tallyData[`survey_responses.${question.id}`]}
-                            type="survresponses"
-                          />
-                        </CardContent>
-                      </Card>
-                    ))
-                  ))}
-                </>
-              )}
-
-              {correlationShown && (
-                <Card className="w-[900px] h-[650px]">
+                <Card className="w-full">
                   <CardHeader>
-                    <CardTitle>Correlation Results</CardTitle>
+                    <CardTitle>
+                      {"Note from admin:"}
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="h-full flex flex-col">
-                    {correlationLoading ? (
-                      <div className="flex flex-col items-center justify-center mt-4">
-                        <Spinner className="w-10 h-10 mb-2" />
-                        <p className="text-muted-foreground text-sm">Analyzing correlation...</p>
-                      </div>
-                    ) : (
-                      <CorrelationChart data={correlationData} />
-                    )}
+                  <CardContent>
+                    {"PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
                   </CardContent>
+                  <CardFooter>
+                    {"thx mwa mwa 😘 -G"}
+                  </CardFooter>
                 </Card>
               )}
+              <Tabs defaultValue="tally" className="flex flex-col gap-2 w-full">
+                <TabsList>
+                  <TabsTrigger value="tally">All Responses</TabsTrigger>
+                  <TabsTrigger value="nutrition">Nutrition Responses</TabsTrigger>
+                  <TabsTrigger value="correlation">Physical & Dietary Correlation</TabsTrigger>
+                  <TabsTrigger value="cluster">Cluster Analysis</TabsTrigger>
+                </TabsList>
+                <TabsContent value="tally" className="flex flex-col gap-2">
 
-              {rawShown && (
-                clusterLoading ? (
-                  <div className="flex flex-col items-center justify-center mt-5">
-                    <Spinner className="w-10 h-10 mb-2" />
-                    <p className="text-sm text-muted-foreground">Analyzing clusters...</p>
-                  </div>
-                ) : (
-                  <Card className="w-[900px] h-[700px]">
-                    <CardHeader>
-                      <CardTitle>Cluster Distribution (2D)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-full p-0">
-                      <ClusterScatterChart data={convertTo2D(rawData)} />
-                    </CardContent>
-                  </Card>
-                )
-              )}
+                  {!tallyShown && (
+                    <>
+                      <Card className="w-md">
+                        <CardContent>
+                          Display all the responses to the survey.
+                        </CardContent>
+                        <CardFooter>
+                          <Button className="w-full" variant="outline" onClick={getTallyData}>
+                            Display form responses
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    </>
+                  )}
 
-              {nutritionShown && (
-                nutritionLoading ? (
-                  <div>
-                    <h1 className="mb-3">Loading nutrition responses...</h1>
-                    <Spinner className="w-10 h-10" />
-                  </div>
-                ) : (
-                  <>
-                    <Card className={cardClasses}>
+                  {tallyShown && (
+                    tallyLoading ? (
+                      <div>
+                        <h1 className="mb-3">Loading responses...</h1>
+                        <Spinner className="w-10 h-10" />
+                      </div>
+                    ) : (
+                      <>
+                        <Card className={cardClasses}>
+                          <CardContent>
+                            Total responses:{" "}
+                            <span className="font-bold">{tallyData?.["total_responses"]}</span>
+                          </CardContent>
+                        </Card>
+
+                        {survey?.details_field.fields.map(field => (
+                          <Card className={cardClasses} key={field.id}>
+                            <CardHeader>
+                              <CardTitle>{field.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              {tallyData?.[`details_field.${field.id}`] && (
+                                <ResponseChart
+                                  rawData={tallyData[`details_field.${field.id}`]}
+                                  type="detfield"
+                                />
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+
+                        {survey?.pages.map(page =>
+                          page.questions.map(question => (
+                            <Card className={cardClasses} key={question.id}>
+                              <CardHeader>
+                                <CardTitle>{question.question}</CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                {tallyData?.[`survey_responses.${question.id}`] && (
+                                  <ResponseChart
+                                    rawData={tallyData[`survey_responses.${question.id}`]}
+                                    type="survresponses"
+                                  />
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))
+                        )}
+                      </>
+                    )
+                  )}
+
+                </TabsContent>
+                <TabsContent value="nutrition" className="flex flex-col gap-2">
+                  {!nutritionShown &&
+                    <Card className="w-md">
                       <CardContent>
-                        Total responses: <span className="font-bold">{nutritionData["total_responses"]}</span>
+                        Loads only the Nutrition section to save bandwidth.
+                      </CardContent>
+                      <CardFooter>
+                        <Button className="w-full" variant="outline" onClick={handleNutritionRet}>
+                          Display only Nutrition responses
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  }
+
+                  {nutritionShown && (
+                    nutritionLoading ? (
+                      <div>
+                        <h1 className="mb-3">Loading nutrition responses...</h1>
+                        <Spinner className="w-10 h-10" />
+                      </div>
+                    ) : (
+                      <>
+                        <Card className={cardClasses}>
+                          <CardContent>
+                            Total responses: <span className="font-bold">{nutritionData["total_responses"]}</span>
+                          </CardContent>
+                        </Card>
+
+                        {survey?.pages.find(p => p.title.includes("Nutrition"))?.questions.map(question => (
+                          <Card key={question.id} className={cardClasses}>
+                            <CardHeader>
+                              <CardTitle>{question.question}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              {nutritionData[`survey_responses.${question.id}`] && (
+                                <ResponseChart
+                                  rawData={nutritionData[`survey_responses.${question.id}`]}
+                                  type="survresponses"
+                                />
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </>
+                    )
+                  )}
+                </TabsContent>
+                <TabsContent value="correlation" className="flex flex-col gap-2">
+                  {!correlationShown && (
+                    <Card className="w-md">
+                      <CardContent>
+                        Analyze correlation between physical and nutrition data.
+                      </CardContent>
+                      <CardFooter>
+                        <Button className="w-full" variant="outline" onClick={handleCorrelationAnalysis}>
+                          Run Correlation Analysis
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  )}
+                  {correlationShown && (
+                    <Card className="w-[900px] h-[650px]">
+                      <CardHeader>
+                        <CardTitle>Correlation Results</CardTitle>
+                      </CardHeader>
+                      <CardContent className="h-full flex flex-col">
+                        {correlationLoading ? (
+                          <div className="flex flex-col items-center justify-center mt-4">
+                            <Spinner className="w-10 h-10 mb-2" />
+                            <p className="text-muted-foreground text-sm">Analyzing correlation...</p>
+                          </div>
+                        ) : (
+                          <CorrelationChart data={correlationData} />
+                        )}
                       </CardContent>
                     </Card>
-
-                    {survey?.pages.find(p => p.title.includes("Nutrition"))?.questions.map(question => (
-                      <Card key={question.id} className={cardClasses}>
+                  )}
+                </TabsContent>
+                <TabsContent value="cluster" className="flex flex-col gap-2">
+                  {!rawShown && (
+                    <Card className="w-md">
+                      <CardContent>
+                        Perform cluster analysis to identify respondent groups.
+                      </CardContent>
+                      <CardFooter>
+                        <Button className="w-full" variant="outline" onClick={handleRawDataRet}>
+                          Run Cluster Analysis
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  )}
+                  
+                  {rawShown && (
+                    clusterLoading ? (
+                      <div className="flex flex-col items-center justify-center mt-5">
+                        <Spinner className="w-10 h-10 mb-2" />
+                        <p className="text-sm text-muted-foreground">Analyzing clusters...</p>
+                      </div>
+                    ) : (
+                      <Card className="w-[900px] h-[700px]">
                         <CardHeader>
-                          <CardTitle>{question.question}</CardTitle>
+                          <CardTitle>Cluster Distribution (2D)</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                          {nutritionData[`survey_responses.${question.id}`] && (
-                            <ResponseChart
-                              rawData={nutritionData[`survey_responses.${question.id}`]}
-                              type="survresponses"
-                            />
-                          )}
+                        <CardContent className="h-full p-0">
+                          <ClusterScatterChart data={convertTo2D(rawData)} />
                         </CardContent>
                       </Card>
-                    ))}
-                  </>
-                )
-              )}
+                    )
+                  )}
+                </TabsContent>
+              </Tabs>
               
             </>
           ) : (
@@ -416,11 +458,15 @@ const ResponsesPage = () => {
           )}
         </div>
       ) : (
-        viewIsLoading && (
-          <div className="p-10">
-            <h1 className="text-3xl text-destructive font-bold">Unable to show responses</h1>
-            <p className="mt-2">Survey Not Found</p>
-          </div>
+        viewIsLoading ? (
+          <>Loading...</>
+        ) : (
+          <>
+            <div className="p-10">
+              <h1 className="text-3xl text-destructive font-bold">Unable to show responses</h1>
+              <p className="mt-2">Survey Not Found</p>
+            </div>
+          </>
         )
       )}
     </>

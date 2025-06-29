@@ -29,6 +29,34 @@ function getCorrelationText(value: number) {
 }
 
 const CorrelationChart: React.FC<Props> = ({ data }) => {
+  const [colors, setColors] = React.useState<string[]>([]);
+  
+  const getShadcnColor = (name: string): string => {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(`--${name}`)
+      .trim();
+  };
+
+  React.useEffect(() => {
+    const updateColors = () => {
+      setColors([
+        getShadcnColor("chart-1"),
+        getShadcnColor("chart-2"),
+        getShadcnColor("chart-3"),
+        getShadcnColor("chart-4"),
+        getShadcnColor("chart-5"),
+      ]);
+    };
+
+    updateColors();
+
+    // Optional: Update colors if user toggles dark mode
+    const observer = new MutationObserver(updateColors);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
+
   const [page, setPage] = React.useState(0);
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
 
@@ -43,7 +71,9 @@ const CorrelationChart: React.FC<Props> = ({ data }) => {
       {
         label: "Physical-Nutrition Correlation",
         data: paginated.map((d) => d.value),
-        backgroundColor: "#4C93FF",
+        backgroundColor: paginated.map(
+          () => colors[Math.floor(Math.random() * colors.length)]
+        ),
       },
     ],
   };
@@ -65,7 +95,7 @@ const CorrelationChart: React.FC<Props> = ({ data }) => {
   return (
     <div className="flex flex-col h-full gap-4">
       <div className="h-[300px]">
-        <Bar data={chartData} options={chartOptions} />
+        <Bar data={chartData} options={chartOptions}/>
       </div>
 
       {/* No more scrolling here */}
