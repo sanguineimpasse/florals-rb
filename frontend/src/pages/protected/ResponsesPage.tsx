@@ -1,17 +1,18 @@
 import React from "react";
 import { useParams } from "react-router";
 import axios, { AxiosResponse } from "axios";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
-import ClusterScatterChart from "@/components/ClusterChart";
-import CorrelationChart from "@/components/CorrelationChart";
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Legend, Tooltip } from 'chart.js';
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip);
-import Survey from "@/types/survey_format";
 
-import nut_survey from "@/data/nutrition_survey.json";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner"
 import ResponseChart from "@/components/responsechart";
+import ClusterScatterChart from "@/components/ClusterChart";
+import CorrelationChart from "@/components/CorrelationChart";
+
+import Survey from "@/types/survey_format";
+import nut_survey from "@/data/nutrition_survey.json";
 
 const ResponsesPage = () => {
   const params = useParams();
