@@ -29,10 +29,11 @@ const ResponsesPage = () => {
     setViewIsLoading(false);
   }, [params]);
 
-  const [tallyShown, setTallyShown] = React.useState(false);
-  const [tallyLoading, setTallyLoading] = React.useState(true);
   const [retrievalFailed, setRetrievalFailed] = React.useState(false);
   const [retrievalError, setRetrievalError] = React.useState<any>();
+
+  const [tallyShown, setTallyShown] = React.useState(false);
+  const [tallyLoading, setTallyLoading] = React.useState(true);
   const [tallyData, setTallyData] = React.useState<any>();
 
   const [nutritionShown, setNutritionShown] = React.useState(false);
@@ -99,6 +100,22 @@ const ResponsesPage = () => {
     return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
   }
 
+  function computePearsonCorrelation(x: number[], y: number[]): number {
+    const n = x.length;
+    const avgX = x.reduce((a, b) => a + b, 0) / n;
+    const avgY = y.reduce((a, b) => a + b, 0) / n;
+
+    let numerator = 0, denomX = 0, denomY = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = x[i] - avgX;
+      const dy = y[i] - avgY;
+      numerator += dx * dy;
+      denomX += dx * dx;
+      denomY += dy * dy;
+    }
+    return numerator / Math.sqrt(denomX * denomY);
+  }
+
   //* API CALLS HERE
   async function handleCorrelationAnalysis() {
     setCorrelationLoading(true);
@@ -134,22 +151,6 @@ const ResponsesPage = () => {
     } finally {
       setCorrelationLoading(false);
     }
-  }
-
-  function computePearsonCorrelation(x: number[], y: number[]): number {
-    const n = x.length;
-    const avgX = x.reduce((a, b) => a + b, 0) / n;
-    const avgY = y.reduce((a, b) => a + b, 0) / n;
-
-    let numerator = 0, denomX = 0, denomY = 0;
-    for (let i = 0; i < n; i++) {
-      const dx = x[i] - avgX;
-      const dy = y[i] - avgY;
-      numerator += dx * dy;
-      denomX += dx * dx;
-      denomY += dy * dy;
-    }
-    return numerator / Math.sqrt(denomX * denomY);
   }
 
   async function handleRawDataRet() {
@@ -208,12 +209,9 @@ const ResponsesPage = () => {
     }
   }
 
-  function handleFormRet() {
+  async function getTallyData() {
     setTallyShown(true);
-    queryDB();
-  }
 
-  async function queryDB() {
     let apiAddress = `/api/data/get-responses`;
     if (import.meta.env.DEV) {
       apiAddress = 'http://localhost:4000/api/data/get-responses';
@@ -252,7 +250,7 @@ const ResponsesPage = () => {
                       Display all the responses to the survey.
                     </CardContent>
                     <CardFooter>
-                      <Button className="w-full" variant="outline" onClick={handleFormRet}>
+                      <Button className="w-full" variant="outline" onClick={getTallyData}>
                         Display form responses
                       </Button>
                     </CardFooter>
@@ -297,20 +295,39 @@ const ResponsesPage = () => {
                       Total responses: <span className="font-bold">{tallyData["total_responses"]}</span>
                     </CardContent>
                   </Card>
-                  {survey?.details_field.fields.map(field => (
-                    <Card key={field.id} className={cardClasses}>
+                  {survey && survey.details_field.fields.map((field)=>(
+                    <Card className={cardClasses} key={field.id}>
                       <CardHeader>
-                        <CardTitle>{field.title}</CardTitle>
+                        <CardTitle>
+                          {`${field.title}`}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        {tallyData[`details_field.${field.id}`] && (
-                          <ResponseChart
-                            rawData={tallyData[`details_field.${field.id}`]}
-                            type="detfield"
-                          />
-                        )}
+                        {false && <pre className="text-sm">{JSON.stringify(tallyData[`details_field.${field.id}`], null, 2)}</pre>}
+                        <ResponseChart
+                          rawData={tallyData[`details_field.${field.id}`]}
+                          type="detfield"
+                        />
                       </CardContent>
                     </Card>
+                  ))}
+                  {survey && survey.pages.map((page)=>(
+                    page.questions.map((question)=>(
+                      <Card className={cardClasses} key={question.id}>
+                        <CardHeader>
+                          <CardTitle>
+                            {`${question.question}`}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {false && <pre className="text-sm">{JSON.stringify(tallyData[`survey_responses.${question.id}`], null, 2)}</pre>}
+                          <ResponseChart
+                            rawData={tallyData[`survey_responses.${question.id}`]}
+                            type="survresponses"
+                          />
+                        </CardContent>
+                      </Card>
+                    ))
                   ))}
                 </>
               )}
@@ -383,6 +400,7 @@ const ResponsesPage = () => {
                   </>
                 )
               )}
+              
             </>
           ) : (
             <Card className="w-md mt-4">
