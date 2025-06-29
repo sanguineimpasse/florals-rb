@@ -17,7 +17,7 @@ const ResponsesPage = () => {
   const params = useParams();
 
   const [idIsValid, setIdIsValid] = React.useState(false);
-  const [viewIsLoading, setViewIsLoading] = React.useState(true);
+  const [viewIsLoading, setViewIsLoading] = React.useState<boolean>(true);
   const [survey, setSurvey] = React.useState<Survey | null>(null);
 
   React.useEffect(() => {
@@ -48,7 +48,7 @@ const ResponsesPage = () => {
   const [correlationLoading, setCorrelationLoading] = React.useState(false);
   const [correlationShown, setCorrelationShown] = React.useState(false);
 
-  const [debugShowData, setDebugShowData] = React.useState(false);
+  //const [debugShowData, setDebugShowData] = React.useState(false);
 
   const cardClasses = "w-full md:w-lg";
 
@@ -61,7 +61,7 @@ const ResponsesPage = () => {
     });
   };
 
-  function handleCorrelationAnalysis() {
+  async function handleCorrelationAnalysis() {
     setCorrelationLoading(true);
     setCorrelationShown(true);
     setTallyShown(false);
@@ -73,24 +73,27 @@ const ResponsesPage = () => {
       apiAddress = 'http://localhost:4000/api/data/get-raw-answers';
     }
 
-    axios.get(apiAddress, { withCredentials: true })
-      .then((response: AxiosResponse<any[]>) => {
-        const cleaned = response.data.filter(d =>
-          Object.values(d).every(v => typeof v === 'number' && Number.isFinite(v))
-        );
+    try {
+      const response: AxiosResponse<any[]> = await axios.get(apiAddress, { withCredentials: true });
 
-        const correlations = cleaned.map((entry, index) => {
-          const values = Object.values(entry).map(Number);
-          const phys = values.slice(0, 10);
-          const nut = values.slice(10, 20);
-          const value = computePearsonCorrelation(phys, nut);
-          return { respondent: `Respondent #${index + 1}`, value };
-        });
+      const cleaned = response.data.filter(d =>
+        Object.values(d).every(v => typeof v === 'number' && Number.isFinite(v))
+      );
 
-        setCorrelationData(correlations);
-      })
-      .catch(err => console.error("Correlation error:", err))
-      .finally(() => setCorrelationLoading(false));
+      const correlations = cleaned.map((entry, index) => {
+        const values = Object.values(entry).map(Number);
+        const phys = values.slice(0, 10);
+        const nut = values.slice(10, 20);
+        const value = computePearsonCorrelation(phys, nut);
+        return { respondent: `Respondent #${index + 1}`, value };
+      });
+
+      setCorrelationData(correlations);
+    } catch (err) {
+      console.error("Correlation error:", err);
+    } finally {
+      setCorrelationLoading(false);
+    }
   }
 
   function computePearsonCorrelation(x: number[], y: number[]): number {
@@ -109,7 +112,7 @@ const ResponsesPage = () => {
     return numerator / Math.sqrt(denomX * denomY);
   }
 
-  function handleRawDataRet() {
+  async function handleRawDataRet() {
     setClusterLoading(true);
     setRawShown(true);
     setTallyShown(false);
@@ -120,23 +123,27 @@ const ResponsesPage = () => {
       apiAddress = 'http://localhost:4000/api/data/get-raw-answers';
     }
 
-    axios.get(apiAddress, { withCredentials: true })
-      .then((response: AxiosResponse<any[]>) => {
-        const cleaned = response.data.filter(d =>
-          Object.values(d).every(v => typeof v === 'number')
-        );
-        const vectors = cleaned.map(obj =>
-          Object.values(obj).map(Number)
-        );
-        const { assignments } = kMeans(vectors, 3);
-        const clusteredData = cleaned.map((entry, i) => ({
-          cluster: assignments[i],
-          data: entry,
-        }));
-        setRawData(clusteredData);
-      })
-      .catch(err => console.error("Raw data error:", err))
-      .finally(() => setClusterLoading(false));
+    try {
+      const response: AxiosResponse<any[]> = await axios.get(apiAddress, { withCredentials: true });
+
+      const cleaned = response.data.filter(d =>
+        Object.values(d).every(v => typeof v === 'number')
+      );
+
+      const vectors = cleaned.map(obj =>
+        Object.values(obj).map(Number)
+      );
+      const { assignments } = kMeans(vectors, 3);
+      const clusteredData = cleaned.map((entry, i) => ({
+        cluster: assignments[i],
+        data: entry,
+      }));
+      setRawData(clusteredData);
+    } catch (err) {
+      console.error("Raw data error:", err);
+    } finally {
+      setClusterLoading(false);
+    }
   }
 
   function kMeans(data: number[][], k: number, maxIterations = 100) {
@@ -177,7 +184,7 @@ const ResponsesPage = () => {
     return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
   }
 
-  function handleNutritionRet() {
+  async function handleNutritionRet() {
     setNutritionShown(true);
     setNutritionLoading(true);
     setNutritionFailed(false);
@@ -188,13 +195,19 @@ const ResponsesPage = () => {
       apiAddress = 'http://localhost:4000/api/data/get-nutrition-responses';
     }
 
-    axios.get(apiAddress, { withCredentials: true })
-      .then((response: AxiosResponse<any>) => setNutritionData(response.data))
-      .catch(err => {
-        setNutritionFailed(true);
-        setNutritionError(axios.isAxiosError(err) ? err.message : String(err));
-      })
-      .finally(() => setNutritionLoading(false));
+    try {
+      const response: AxiosResponse<any> = await axios.get(apiAddress, { withCredentials: true });
+      setNutritionData(response.data);
+    } catch (err) {
+      setNutritionFailed(true);
+      if (axios.isAxiosError(err)) {
+        setNutritionError("Axios error: " + err.message);
+      } else {
+        setNutritionError("Unexpected error: " + err);
+      }
+    } finally {
+      setNutritionLoading(false);
+    }
   }
 
   function handleFormRet() {
@@ -227,157 +240,179 @@ const ResponsesPage = () => {
             Viewing responses for <span className="font-bold">Nutrition Survey</span>
           </h1>
 
-          {!tallyShown && !nutritionShown && !rawShown && !correlationShown && (
+          {!retrievalFailed ? (
             <>
-              <Card className="w-md">
-                <CardContent>
-                  {"Note from admin: PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline" onClick={handleFormRet}>
-                    Display form responses
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card className="w-md">
-                <CardContent>
-                  Loads only the Nutrition section to save bandwidth.
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline" onClick={handleNutritionRet}>
-                    Display only Nutrition responses
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card className="w-md">
-                <CardContent>
-                  Analyze correlation between physical and nutrition data.
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline" onClick={handleCorrelationAnalysis}>
-                    Run Correlation Analysis
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card className="w-md">
-                <CardContent>
-                  Perform cluster analysis to identify respondent groups.
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant="outline" onClick={handleRawDataRet}>
-                    Run Cluster Analysis
-                  </Button>
-                </CardFooter>
-              </Card>
-            </>
-          )}
+              {!tallyShown && !nutritionShown && !rawShown && !correlationShown && (
+                <>
+                  <Card className="w-md">
+                    <CardContent>
+                      {"Note from admin: PLEASE WAG PO KUHA NANG KUHA NG RESPONSES MULA SA DB. MAPUPUNO PO YUNG QUOTA KO SA MONGODB 😭"}
+                    </CardContent>
+                  </Card>
+                  <Card className="w-md">
+                    <CardContent>
+                      Display all the responses to the survey.
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full" variant="outline" onClick={handleFormRet}>
+                        Display form responses
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  <Card className="w-md">
+                    <CardContent>
+                      Loads only the Nutrition section to save bandwidth.
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full" variant="outline" onClick={handleNutritionRet}>
+                        Display only Nutrition responses
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  <Card className="w-md">
+                    <CardContent>
+                      Analyze correlation between physical and nutrition data.
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full" variant="outline" onClick={handleCorrelationAnalysis}>
+                        Run Correlation Analysis
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  <Card className="w-md">
+                    <CardContent>
+                      Perform cluster analysis to identify respondent groups.
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full" variant="outline" onClick={handleRawDataRet}>
+                        Run Cluster Analysis
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </>
+              )}
 
-          {tallyShown && !tallyLoading && !retrievalFailed && tallyData && (
-            <>
-              <Card className={cardClasses}>
-                <CardContent>
-                  Total responses: <span className="font-bold">{tallyData["total_responses"]}</span>
-                </CardContent>
-              </Card>
-              {survey?.details_field.fields.map(field => (
-                <Card key={field.id} className={cardClasses}>
+              {tallyShown && !tallyLoading && tallyData && (
+                <>
+                  <Card className={cardClasses}>
+                    <CardContent>
+                      Total responses: <span className="font-bold">{tallyData["total_responses"]}</span>
+                    </CardContent>
+                  </Card>
+                  {survey?.details_field.fields.map(field => (
+                    <Card key={field.id} className={cardClasses}>
+                      <CardHeader>
+                        <CardTitle>{field.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {tallyData[`details_field.${field.id}`] && (
+                          <ResponseChart
+                            rawData={tallyData[`details_field.${field.id}`]}
+                            type="detfield"
+                          />
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </>
+              )}
+
+              {correlationShown && (
+                <Card className="w-[900px] h-[650px]">
                   <CardHeader>
-                    <CardTitle>{field.title}</CardTitle>
+                    <CardTitle>Correlation Results</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    {tallyData[`details_field.${field.id}`] && (
-                      <ResponseChart
-                        rawData={tallyData[`details_field.${field.id}`]}
-                        type="detfield"
-                      />
+                  <CardContent className="h-full flex flex-col">
+                    {correlationLoading ? (
+                      <div className="flex flex-col items-center justify-center mt-4">
+                        <Spinner className="w-10 h-10 mb-2" />
+                        <p className="text-muted-foreground text-sm">Analyzing correlation...</p>
+                      </div>
+                    ) : (
+                      <CorrelationChart data={correlationData} />
                     )}
                   </CardContent>
                 </Card>
-              ))}
-            </>
-          )}
+              )}
 
-          {correlationShown && (
-            <Card className="w-[900px] h-[650px]">
-              <CardHeader>
-                <CardTitle>Correlation Results</CardTitle>
-              </CardHeader>
-              <CardContent className="h-full flex flex-col">
-                {correlationLoading ? (
-                  <div className="flex flex-col items-center justify-center mt-4">
+              {rawShown && (
+                clusterLoading ? (
+                  <div className="flex flex-col items-center justify-center mt-5">
                     <Spinner className="w-10 h-10 mb-2" />
-                    <p className="text-muted-foreground text-sm">Analyzing correlation...</p>
+                    <p className="text-sm text-muted-foreground">Analyzing clusters...</p>
                   </div>
                 ) : (
-                  <CorrelationChart data={correlationData} />
-                )}
+                  <Card className="w-[900px] h-[700px]">
+                    <CardHeader>
+                      <CardTitle>Cluster Distribution (2D)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-full p-0">
+                      <ClusterScatterChart data={convertTo2D(rawData)} />
+                    </CardContent>
+                  </Card>
+                )
+              )}
+
+              {nutritionShown && (
+                nutritionLoading ? (
+                  <div>
+                    <h1 className="mb-3">Loading nutrition responses...</h1>
+                    <Spinner className="w-10 h-10" />
+                  </div>
+                ) : nutritionFailed ? (
+                  <Card className="w-md mt-4">
+                    <CardContent>
+                      <h1 className="text-destructive">Nutrition Retrieval Error</h1>
+                      <p className="text-destructive">{nutritionError}</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    <Card className={cardClasses}>
+                      <CardContent>
+                        Total responses: <span className="font-bold">{nutritionData["total_responses"]}</span>
+                      </CardContent>
+                    </Card>
+
+                    {survey?.pages.find(p => p.title.includes("Nutrition"))?.questions.map(question => (
+                      <Card key={question.id} className={cardClasses}>
+                        <CardHeader>
+                          <CardTitle>{question.question}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {nutritionData[`survey_responses.${question.id}`] && (
+                            <ResponseChart
+                              rawData={nutritionData[`survey_responses.${question.id}`]}
+                              type="survresponses"
+                            />
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </>
+                )
+              )}
+            </>
+          ) : (
+            <Card className="w-md mt-4">
+              <CardHeader>
+                <CardTitle>
+                  <h1 className="text-destructive">Retrieval Error</h1>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-destructive">{retrievalError}</p>
               </CardContent>
             </Card>
           )}
-
-          {rawShown && (
-            clusterLoading ? (
-              <div className="flex flex-col items-center justify-center mt-5">
-                <Spinner className="w-10 h-10 mb-2" />
-                <p className="text-sm text-muted-foreground">Analyzing clusters...</p>
-              </div>
-            ) : (
-              <Card className="w-[900px] h-[700px]">
-                <CardHeader>
-                  <CardTitle>Cluster Distribution (2D)</CardTitle>
-                </CardHeader>
-                <CardContent className="h-full p-0">
-                  <ClusterScatterChart data={convertTo2D(rawData)} />
-                </CardContent>
-              </Card>
-            )
-          )}
-
-          {nutritionShown && (
-            nutritionLoading ? (
-              <div>
-                <h1 className="mb-3">Loading nutrition responses...</h1>
-                <Spinner className="w-10 h-10" />
-              </div>
-            ) : nutritionFailed ? (
-              <Card className="w-md mt-4">
-                <CardContent>
-                  <h1 className="text-destructive">Nutrition Retrieval Error</h1>
-                  <p className="text-destructive">{nutritionError}</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <>
-                <Card className={cardClasses}>
-                  <CardContent>
-                    Total responses: <span className="font-bold">{nutritionData["total_responses"]}</span>
-                  </CardContent>
-                </Card>
-
-                {survey?.pages.find(p => p.title.includes("Nutrition"))?.questions.map(question => (
-                  <Card key={question.id} className={cardClasses}>
-                    <CardHeader>
-                      <CardTitle>{question.question}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {nutritionData[`survey_responses.${question.id}`] && (
-                        <ResponseChart
-                          rawData={nutritionData[`survey_responses.${question.id}`]}
-                          type="survresponses"
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </>
-            )
-          )}
         </div>
-      ) : viewIsLoading ? null : (
-        <div className="p-10">
-          <h1 className="text-3xl text-destructive font-bold">Unable to show responses</h1>
-          <p className="mt-2">Survey Not Found</p>
-        </div>
+      ) : (
+        viewIsLoading && (
+          <div className="p-10">
+            <h1 className="text-3xl text-destructive font-bold">Unable to show responses</h1>
+            <p className="mt-2">Survey Not Found</p>
+          </div>
+        )
       )}
     </>
   );
