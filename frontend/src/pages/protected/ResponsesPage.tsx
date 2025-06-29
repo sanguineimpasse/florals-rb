@@ -38,8 +38,6 @@ const ResponsesPage = () => {
   const [nutritionShown, setNutritionShown] = React.useState(false);
   const [nutritionLoading, setNutritionLoading] = React.useState(false);
   const [nutritionData, setNutritionData] = React.useState<any>();
-  const [nutritionError, setNutritionError] = React.useState<any>();
-  const [nutritionFailed, setNutritionFailed] = React.useState(false);
 
   const [rawShown, setRawShown] = React.useState(false);
   const [rawData, setRawData] = React.useState<any[]>([]);
@@ -53,6 +51,7 @@ const ResponsesPage = () => {
 
   const cardClasses = "w-full md:w-lg";
 
+  //* HELPER FUNCTIONS HERE
   const convertTo2D = (clusteredData: any[]) => {
     return clusteredData.map(({ data }) => {
       const values = Object.values(data).map(Number);
@@ -60,8 +59,47 @@ const ResponsesPage = () => {
       const y = values.slice(10).reduce((a, b) => a + b, 0) / 10;
       return { x, y, answerAvg: (x + y) / 2 };
     });
-  };
+  }
 
+  function kMeans(data: number[][], k: number, maxIterations = 100) {
+    const centroids = data.slice(0, k).map(vec => [...vec]);
+    let assignments: number[] = [];
+
+    for (let iter = 0; iter < maxIterations; iter++) {
+      assignments = data.map(point => {
+        let best = 0, bestDist = Infinity;
+        centroids.forEach((c, i) => {
+          const dist = euclideanDistance(point, c);
+          if (dist < bestDist) {
+            best = i; bestDist = dist;
+          }
+        });
+        return best;
+      });
+
+      const newCentroids = Array.from({ length: k }, () => Array(data[0].length).fill(0));
+      const counts = Array(k).fill(0);
+
+      data.forEach((point, i) => {
+        const cluster = assignments[i];
+        counts[cluster]++;
+        point.forEach((v, j) => newCentroids[cluster][j] += v);
+      });
+
+      newCentroids.forEach((centroid, i) => {
+        if (counts[i] > 0) centroid.forEach((_, j) => centroid[j] /= counts[i]);
+      });
+
+      centroids.splice(0, centroids.length, ...newCentroids);
+    }
+    return { assignments, centroids };
+  }
+
+  function euclideanDistance(a: number[], b: number[]) {
+    return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
+  }
+
+  //* API CALLS HERE
   async function handleCorrelationAnalysis() {
     setCorrelationLoading(true);
     setCorrelationShown(true);
@@ -91,7 +129,8 @@ const ResponsesPage = () => {
 
       setCorrelationData(correlations);
     } catch (err) {
-      console.error("Correlation error:", err);
+      setRetrievalFailed(true);
+      setRetrievalError(axios.isAxiosError(err) ? err.message : String(err));
     } finally {
       setCorrelationLoading(false);
     }
@@ -141,55 +180,17 @@ const ResponsesPage = () => {
       }));
       setRawData(clusteredData);
     } catch (err) {
-      console.error("Raw data error:", err);
+      setRetrievalFailed(true);
+      setRetrievalError(axios.isAxiosError(err) ? err.message : String(err));
+
     } finally {
       setClusterLoading(false);
     }
   }
 
-  function kMeans(data: number[][], k: number, maxIterations = 100) {
-    const centroids = data.slice(0, k).map(vec => [...vec]);
-    let assignments: number[] = [];
-
-    for (let iter = 0; iter < maxIterations; iter++) {
-      assignments = data.map(point => {
-        let best = 0, bestDist = Infinity;
-        centroids.forEach((c, i) => {
-          const dist = euclideanDistance(point, c);
-          if (dist < bestDist) {
-            best = i; bestDist = dist;
-          }
-        });
-        return best;
-      });
-
-      const newCentroids = Array.from({ length: k }, () => Array(data[0].length).fill(0));
-      const counts = Array(k).fill(0);
-
-      data.forEach((point, i) => {
-        const cluster = assignments[i];
-        counts[cluster]++;
-        point.forEach((v, j) => newCentroids[cluster][j] += v);
-      });
-
-      newCentroids.forEach((centroid, i) => {
-        if (counts[i] > 0) centroid.forEach((_, j) => centroid[j] /= counts[i]);
-      });
-
-      centroids.splice(0, centroids.length, ...newCentroids);
-    }
-    return { assignments, centroids };
-  }
-
-  function euclideanDistance(a: number[], b: number[]) {
-    return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
-  }
-
   async function handleNutritionRet() {
     setNutritionShown(true);
     setNutritionLoading(true);
-    setNutritionFailed(false);
-    setNutritionError(null);
 
     let apiAddress = `/api/data/get-nutrition-responses`;
     if (import.meta.env.DEV) {
@@ -200,12 +201,8 @@ const ResponsesPage = () => {
       const response: AxiosResponse<any> = await axios.get(apiAddress, { withCredentials: true });
       setNutritionData(response.data);
     } catch (err) {
-      setNutritionFailed(true);
-      if (axios.isAxiosError(err)) {
-        setNutritionError("Axios error: " + err.message);
-      } else {
-        setNutritionError("Unexpected error: " + err);
-      }
+      setRetrievalFailed(true);
+      setRetrievalError(axios.isAxiosError(err) ? err.message : String(err));
     } finally {
       setNutritionLoading(false);
     }
@@ -360,13 +357,6 @@ const ResponsesPage = () => {
                     <h1 className="mb-3">Loading nutrition responses...</h1>
                     <Spinner className="w-10 h-10" />
                   </div>
-                ) : nutritionFailed ? (
-                  <Card className="w-md mt-4">
-                    <CardContent>
-                      <h1 className="text-destructive">Nutrition Retrieval Error</h1>
-                      <p className="text-destructive">{nutritionError}</p>
-                    </CardContent>
-                  </Card>
                 ) : (
                   <>
                     <Card className={cardClasses}>
